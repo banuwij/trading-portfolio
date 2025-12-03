@@ -1,271 +1,181 @@
 {% extends "base.html" %}
+{% block title %}Trading Case Study Portfolio · Public{% endblock %}
+
 {% block content %}
-<h1 style="margin:0 0 6px;">Trading Case Study Portfolio</h1>
-<p style="font-size:13px;color:#9ca3af;margin:0 0 14px;max-width:680px;">
-  Live view of my planned, active, and closed trades – each documented as a small case study.
-</p>
 
-<div class="card">
-  <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;">
-    <div style="flex:1 1 260px;">
-      <h3 style="margin:0 0 4px;">About this journal</h3>
-      <p style="font-size:13px;color:#e5e7eb;margin:0 0 10px;">
-        I log trades by idea, execution, and review. The goal is to make my decision-making
-        transparent, not just the P&amp;L.
-      </p>
-      <a class="btn-outline" href="https://linkedin.com/in/banuwijaya" target="_blank" rel="noopener noreferrer">
-        Hire me on LinkedIn
-        <span style="font-size:14px;">↗</span>
-      </a>
-      <p style="font-size:11px;color:#9ca3af;margin-top:8px;">
-        You can export closed trades as CSV for deeper review.
-        <a href="{{ url_for('export_closed_csv') }}" style="font-size:11px;">Download CSV &darr;</a>
-      </p>
+<div class="glass-card" style="margin-bottom: 20px;">
+    <div style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;">
+        <div style="max-width:460px;">
+            <div class="section-heading">Trading Case Study Portfolio</div>
+            <p class="section-sub">
+                Each trade here is documented as a mini case-study:
+                thesis, execution, and post-trade review. This page is designed for
+                hiring managers who want to see my edge, risk discipline, and how I think in real market conditions.
+            </p>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+                <span class="tag-pill">Planned: {{ planned_count }}</span>
+                <span class="tag-pill">Active: {{ active_count }}</span>
+                <span class="tag-pill">Closed: {{ closed_count }}</span>
+            </div>
+        </div>
+
+        <div style="flex:1;min-width:260px;">
+            <div class="section-sub" style="margin-bottom:6px;">Snapshot (closed trades)</div>
+            <div class="stats-grid">
+                <div class="stat-pill">
+                    <div class="stat-label">Closed trades</div>
+                    <div class="stat-value">{{ stats.total }}</div>
+                </div>
+                <div class="stat-pill">
+                    <div class="stat-label">Win rate</div>
+                    <div class="stat-value stat-value-accent">{{ "%.1f"|format(stats.win_rate) }}%</div>
+                </div>
+                <div class="stat-pill">
+                    <div class="stat-label">Avg R multiple</div>
+                    <div class="stat-value">{{ "%.2f"|format(stats.avg_realized_r) }}</div>
+                </div>
+                <div class="stat-pill">
+                    <div class="stat-label">Max drawdown (R)</div>
+                    <div class="stat-value">{{ "%.2f"|format(stats.max_drawdown) }}</div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div style="flex:1 1 260px;">
-      <h3 style="margin:0 0 4px;">Snapshot</h3>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;">
-        <div>
-          <div class="stat-label">Closed trades</div>
-          <div class="stat-value">{{ stats.total }}</div>
-        </div>
-        <div>
-          <div class="stat-label">Win rate</div>
-          <div class="stat-value">{{ stats.win_rate }}%</div>
-        </div>
-        <div>
-          <div class="stat-label">Avg R:R</div>
-          <div class="stat-value">{{ stats.avg_rr }}</div>
-        </div>
-        <div>
-          <div class="stat-label">Avg R / trade</div>
-          <div class="stat-value">{{ stats.avg_realized_r }}</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px;">
-        <div>
-          <div class="stat-label">Max risk / trade</div>
-          <div class="stat-value">{{ stats.max_risk }}%</div>
-        </div>
-        <div>
-          <div class="stat-label">Avg risk</div>
-          <div class="stat-value">{{ stats.avg_risk }}%</div>
-        </div>
-        <div>
-          <div class="stat-label">Max drawdown</div>
-          <div class="stat-value">{{ stats.max_drawdown }}R</div>
-        </div>
-        <div>
-          <div class="stat-label">Discipline score</div>
-          <div class="stat-value">{{ stats.discipline_score }}%</div>
-        </div>
-      </div>
-    </div>
-    <div style="flex:1 1 260px;">
-      <h3 style="margin:0 0 4px;">About me</h3>
-      <p style="font-size:13px;color:#e5e7eb;margin:0 6px 6px 0;">
-        I work with markets as a builder and trader: documenting setups, risk, and reviews the way
-        I would present it to a desk lead or hiring manager.
-      </p>
-      <ul style="list-style:none;padding:0;margin:0;font-size:11px;color:#9ca3af;">
-        <li>• Markets: Crypto, FX, IDX equities</li>
-        <li>• Styles: Swing &amp; intraday case-study journaling</li>
-        <li>• Tools: TradingView, Python, custom dashboards</li>
-      </ul>
-      <p style="font-size:11px;color:#9ca3af;margin:6px 0 0;">
-        Status overview: {{ planned_count }} planned · {{ active_count }} active · {{ closed_count }} closed
-      </p>
-    </div>
-  </div>
 </div>
 
-{% if playbook %}
-  <div class="card">
-    <h3 style="margin-top:0;">Strategy playbook</h3>
-    <p style="font-size:12px;color:#9ca3af;margin-top:0;">
-      Short descriptions of the strategy tags used across this journal.
-    </p>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;">
-      {% for s in playbook %}
-        <div style="flex:1 1 220px;border-radius:16px;border:1px solid rgba(31,41,55,0.9);padding:10px 12px;">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-            <span class="chip">{{ s.tag }}</span>
-          </div>
-          <div style="font-size:12px;color:#e5e7eb;">
-            {{ s.description }}
-          </div>
+<div class="two-column">
+    <div class="glass-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+            <div>
+                <div class="section-heading">Trade Log</div>
+                <p class="section-sub">
+                    Real-time status by lifecycle: planned, active, and closed.
+                    Click on any row for full pre/post trade details and screenshots.
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('export_closed_csv') }}" class="btn-outline" style="font-size:12px;">
+                    Download closed trades (.csv)
+                </a>
+            </div>
         </div>
-      {% endfor %}
+
+        <form method="get" class="filters-row" style="margin-top:14px;">
+            <select name="status" class="filter-select">
+                <option value="ALL" {% if filter_status == 'ALL' %}selected{% endif %}>Status: All</option>
+                <option value="PLANNED" {% if filter_status == 'PLANNED' %}selected{% endif %}>Planned</option>
+                <option value="ACTIVE" {% if filter_status == 'ACTIVE' %}selected{% endif %}>Active</option>
+                <option value="CLOSED" {% if filter_status == 'CLOSED' %}selected{% endif %}>Closed</option>
+            </select>
+
+            <select name="direction" class="filter-select">
+                <option value="ALL" {% if filter_direction == 'ALL' %}selected{% endif %}>Dir: All</option>
+                <option value="BUY" {% if filter_direction == 'BUY' %}selected{% endif %}>Buy</option>
+                <option value="SELL" {% if filter_direction == 'SELL' %}selected{% endif %}>Sell</option>
+            </select>
+
+            <select name="strategy" class="filter-select">
+                <option value="ALL" {% if filter_strategy == 'ALL' %}selected{% endif %}>Strategy: All</option>
+                {% for s in unique_strategies %}
+                    <option value="{{ s }}" {% if filter_strategy == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="text"
+                   name="symbol"
+                   value="{{ filter_symbol }}"
+                   class="filter-input"
+                   placeholder="Filter symbol (e.g. BTCUSDT)">
+            <button type="submit" class="filter-btn">Apply</button>
+        </form>
+
+        <div class="glass-card-soft" style="margin-top:16px;overflow-x:auto;">
+            <table>
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Symbol</th>
+                    <th>TF</th>
+                    <th>Dir</th>
+                    <th>Entry</th>
+                    <th>SL</th>
+                    <th>TP</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                    <th>Result</th>
+                    <th>R:R</th>
+                    <th>R</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for t in trades %}
+                    <tr onclick="window.location='{{ url_for('trade_detail', trade_id=t.id) }}'"
+                        style="cursor:pointer;">
+                        <td>{{ t.trade_date or '-' }}</td>
+                        <td>{{ t.symbol or '-' }}</td>
+                        <td>{{ t.timeframe or '-' }}</td>
+                        <td>{{ (t.direction or '')|upper }}</td>
+                        <td>{{ "%.4f"|format(t.entry_price) if t.entry_price is not none else '-' }}</td>
+                        <td>{{ "%.4f"|format(t.stop_loss) if t.stop_loss is not none else '-' }}</td>
+                        <td>{{ "%.4f"|format(t.take_profit) if t.take_profit is not none else '-' }}</td>
+                        <td>{{ t.grade or '-' }}</td>
+                        <td>
+                            {% set st = (t.status or '')|upper %}
+                            {% if st == 'PLANNED' %}
+                                <span class="badge-status badge-planned">Planned</span>
+                            {% elif st == 'ACTIVE' %}
+                                <span class="badge-status badge-active">Active</span>
+                            {% elif st == 'CLOSED' %}
+                                <span class="badge-status badge-closed">Closed</span>
+                            {% else %}
+                                <span class="badge-status">{{ st or '-' }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set res = (t.result or '')|upper %}
+                            {% if res == 'WIN' %}
+                                <span class="badge-status badge-win">Win</span>
+                            {% elif res == 'LOSE' %}
+                                <span class="badge-status badge-loss">Loss</span>
+                            {% else %}
+                                <span class="badge-status">{{ res or '-' }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.2f"|format(t.rr_ratio) if t.rr_ratio is not none else '-' }}</td>
+                        <td>{{ "%.2f"|format(t.realized_r) if t.realized_r is not none else '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="12" style="text-align:center;color:var(--text-muted);padding:14px 0;">
+                            No trades yet – once I log trades, they will appear here in real time.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-  </div>
-{% endif %}
 
-<div class="card">
-  <h3 style="margin-top:0;">Filter trades</h3>
-  <form method="get">
-    <div class="filter-row">
-      <div>
-        <label>Status</label>
-        <select name="status">
-          <option value="ALL" {% if filter_status == 'ALL' %}selected{% endif %}>All</option>
-          <option value="PLANNED" {% if filter_status == 'PLANNED' %}selected{% endif %}>Planned</option>
-          <option value="ACTIVE" {% if filter_status == 'ACTIVE' %}selected{% endif %}>Active</option>
-          <option value="CLOSED" {% if filter_status == 'CLOSED' %}selected{% endif %}>Closed</option>
-        </select>
-      </div>
-      <div>
-        <label>Direction</label>
-        <select name="direction">
-          <option value="ALL" {% if filter_direction == 'ALL' %}selected{% endif %}>All</option>
-          <option value="BUY" {% if filter_direction == 'BUY' %}selected{% endif %}>Long (Buy)</option>
-          <option value="SELL" {% if filter_direction == 'SELL' %}selected{% endif %}>Short (Sell)</option>
-        </select>
-      </div>
-      <div>
-        <label>Strategy</label>
-        <select name="strategy">
-          <option value="ALL" {% if filter_strategy == 'ALL' %}selected{% endif %}>All</option>
-          {% for s in unique_strategies %}
-            {% set s_up = s.upper() %}
-            <option value="{{ s_up }}" {% if filter_strategy == s_up %}selected{% endif %}>{{ s_up }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div>
-        <label>Symbol</label>
-        <input type="text" name="symbol" placeholder="e.g. BTCUSDT"
-               value="{{ filter_symbol }}">
-      </div>
-      <button type="submit">Apply</button>
-    </div>
-    <p style="font-size:11px;color:#9ca3af;margin:2px 0 0;">
-      Showing {{ trades|length }} trades · {{ planned_count }} planned · {{ active_count }} active · {{ closed_count }} closed
-    </p>
-  </form>
-</div>
-
-{% if stats.equity_points|length > 0 %}
-  <div class="card card-chart">
-    <h3 style="margin-top:0;">Equity curve (R-multiple, closed trades)</h3>
-    <canvas id="equityChart" height="80"></canvas>
-  </div>
-{% endif %}
-
-{% if stats.tf_stats %}
-  <div class="card">
-    <h3 style="margin-top:0;">Timeframe performance (closed trades)</h3>
-    <table>
-      <thead><tr><th>TF</th><th>Trades</th><th>Win%</th><th>Avg R</th></tr></thead>
-      <tbody>
-      {% for tf, data in stats.tf_stats.items() %}
-        <tr>
-          <td>{{ tf }}</td>
-          <td>{{ data.count }}</td>
-          <td>{{ data.win_rate }}%</td>
-          <td>{{ data.avg_r }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% endif %}
-
-<div class="card">
-  <h3 style="margin-top:0;">Trade log (live)</h3>
-  <p style="font-size:12px;color:#9ca3af;margin-top:0;">
-    Planned, active, and closed trades in one timeline. Click a row to open the full case.
-  </p>
-  <div style="overflow-x:auto;">
-    <table>
-      <thead>
-      <tr>
-        <th>Date</th><th>Symbol</th><th>TF</th><th>Dir</th>
-        <th>Status</th>
-        <th>Entry</th><th>SL</th><th>TP</th>
-        <th>Grade</th><th>Result</th>
-        <th>Strategy</th><th>R:R</th><th>R</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for t in trades %}
-        <tr onclick="window.location='{{ url_for('trade_detail', trade_id=t['id']) }}'"
-            style="cursor:pointer;">
-          <td>{{ t['trade_date'] }}</td>
-          <td>{{ t['symbol'] }}</td>
-          <td>{{ t['timeframe'] }}</td>
-          <td>{{ t['direction'] }}</td>
-          <td>
-            {% set st = (t['status'] or '').upper() %}
-            {% if st == 'PLANNED' %}
-              <span class="status-badge status-planned">
-                <span class="status-dot"></span> Planned
-              </span>
-            {% elif st == 'ACTIVE' %}
-              <span class="status-badge status-active">
-                <span class="status-dot"></span> Active
-              </span>
-            {% elif st == 'CLOSED' %}
-              <span class="status-badge status-closed">
-                <span class="status-dot"></span> Closed
-              </span>
+    <div class="glass-card">
+        <div class="section-heading">Strategy Playbook</div>
+        <p class="section-sub">
+            Quick context for the strategy tags used in this journal.
+        </p>
+        <div class="playbook-list" style="margin-top:14px;">
+            {% for s in playbook %}
+                <div class="glass-card-soft">
+                    <div class="playbook-item-title">
+                        <span class="tag-pill">{{ s.tag }}</span>
+                    </div>
+                    <div style="margin-top:6px;color:var(--text-muted);">
+                        {{ s.description }}
+                    </div>
+                </div>
             {% else %}
-              -
-            {% endif %}
-          </td>
-          <td>{{ t['entry_price'] }}</td>
-          <td>{{ t['stop_loss'] }}</td>
-          <td>{{ t['take_profit'] }}</td>
-          <td><span class="grade">{{ t['grade'] or '-' }}</span></td>
-          <td>
-            {% if (t['result'] or '').upper() == 'WIN' %}
-              <span class="badge badge-win">WIN</span>
-            {% elif (t['result'] or '').upper() == 'LOSE' %}
-              <span class="badge badge-lose">LOSE</span>
-            {% else %}
-              -
-            {% endif %}
-          </td>
-          <td>{{ t['strategy_tag'] }}</td>
-          <td>{{ '%.2f'|format(t['rr_ratio']) if t['rr_ratio'] is not none else '-' }}</td>
-          <td>{{ '%.2f'|format(t['realized_r']) if t['realized_r'] is not none else '-' }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
+                <p class="section-sub">Strategy tags will appear automatically once trades are logged.</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 
-{% if stats.equity_points|length > 0 %}
-<script>
-  const labels = {{ stats.equity_labels|tojson }};
-  const dataPoints = {{ stats.equity_points|tojson }};
-  const ctx = document.getElementById('equityChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: dataPoints,
-        tension: 0.35,
-        borderColor: '#38bdf8',
-        backgroundColor: 'rgba(56,189,248,0.16)',
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display:false } },
-      scales: {
-        x: { display:false },
-        y: {
-          ticks: { color:'#9ca3af', font:{ size:11 } },
-          grid: { color:'rgba(31,41,55,0.7)' }
-        }
-      }
-    }
-  });
-</script>
-{% endif %}
 {% endblock %}
