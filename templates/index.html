@@ -1,174 +1,130 @@
 {% extends "base.html" %}
+{% block title %}Owner Dashboard · Banu Trading Portfolio{% endblock %}
+
 {% block content %}
-<h1 style="margin:0 0 4px;">Owner Dashboard</h1>
-<p style="font-size:13px;color:#9ca3af;margin:0 0 14px;">
-  Internal view with private notes and admin controls.
-</p>
 
-<div class="card">
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
-    <div>
-      <div class="stat-label">Closed trades</div>
-      <div class="stat-value">{{ stats.total }}</div>
-    </div>
-    <div>
-      <div class="stat-label">Win rate</div>
-      <div class="stat-value">{{ stats.win_rate }}%</div>
-    </div>
-    <div>
-      <div class="stat-label">Average R:R</div>
-      <div class="stat-value">{{ stats.avg_rr }}</div>
-    </div>
-    <div>
-      <div class="stat-label">Average R-multiple</div>
-      <div class="stat-value">{{ stats.avg_realized_r }}</div>
-    </div>
-  </div>
-  <div style="margin-top:12px;">
-    <span class="pill">
-      <span class="pill-dot"></span>
-      One trade = one case study for my own review.
-    </span>
-  </div>
-</div>
-
-{% if featured %}
-  <div class="card">
-    <h3 style="margin-top:0;">Featured Case Studies</h3>
-    <p style="font-size:12px;color:#9ca3af;margin-top:0;">
-      Trades that best represent my style and review quality.
-    </p>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;">
-      {% for t in featured %}
-        <div style="flex:1 1 220px;border-radius:14px;border:1px solid #1f2937;padding:10px 12px;">
-          <div style="font-size:13px;font-weight:500;">{{ t['symbol'] }} · {{ t['direction'] }}</div>
-          <div style="font-size:11px;color:#9ca3af;">{{ t['trade_date'] }} · TF {{ t['timeframe'] }}</div>
-          <div style="margin-top:6px;font-size:12px;">
-            <span class="grade">{{ t['grade'] or '-' }}</span>
-            {% if t['strategy_tag'] %}
-              <span class="chip" style="margin-left:4px;">{{ t['strategy_tag'] }}</span>
-            {% endif %}
-          </div>
-          <div style="margin-top:6px;font-size:12px;">
-            RR: {{ '%.2f'|format(t['rr_ratio']) if t['rr_ratio'] is not none else '-' }} ·
-            R: {{ '%.2f'|format(t['realized_r']) if t['realized_r'] is not none else '-' }}
-          </div>
-          <div style="margin-top:8px;">
-            <a href="{{ url_for('trade_detail', trade_id=t['id']) }}" style="font-size:12px;">View case &rarr;</a>
-          </div>
+<div class="glass-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;">
+        <div>
+            <div class="section-heading">Owner Dashboard</div>
+            <p class="section-sub">
+                Private workspace to log trades, upload screenshots, and refine your playbook.
+                Only you can see this view.
+            </p>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                <span class="tag-pill">Planned: {{ planned_count }}</span>
+                <span class="tag-pill">Active: {{ active_count }}</span>
+                <span class="tag-pill">Closed: {{ closed_count }}</span>
+            </div>
         </div>
-      {% endfor %}
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+            <a href="{{ url_for('new_trade') }}" class="btn btn-primary">+ New trade</a>
+            <a href="{{ url_for('public_view') }}" class="btn-outline" style="font-size:12px;">
+                Open public page →
+            </a>
+        </div>
     </div>
-  </div>
-{% endif %}
 
-{% if stats.equity_points|length > 0 %}
-  <div class="card">
-    <h3 style="margin-top:0;">Equity Curve (R-multiple)</h3>
-    <canvas id="equityChart" height="80"></canvas>
-  </div>
-{% endif %}
-
-{% if stats.tf_stats %}
-  <div class="card">
-    <h3 style="margin-top:0;">Timeframe Performance</h3>
-    <table>
-      <thead><tr><th>TF</th><th>Trades</th><th>Win%</th><th>Avg R</th></tr></thead>
-      <tbody>
-      {% for tf, data in stats.tf_stats.items() %}
-        <tr>
-          <td>{{ tf }}</td>
-          <td>{{ data.count }}</td>
-          <td>{{ data.win_rate }}%</td>
-          <td>{{ data.avg_r }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-{% endif %}
-
-<div class="card">
-  <h3 style="margin-top:0;">Full Trade Log</h3>
-  <p style="font-size:12px;color:#9ca3af;margin-top:0;">
-    Click any row to open the full case study.
-  </p>
-  <div style="overflow-x:auto;">
-    <table>
-      <thead>
-      <tr>
-        <th>Date</th><th>Symbol</th><th>TF</th><th>Dir</th>
-        <th>Entry</th><th>SL</th><th>TP</th>
-        <th>Grade</th><th>Result</th>
-        <th>Strategy</th><th>R:R</th><th>R</th>
-        <th>Status</th><th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for t in trades %}
-        <tr>
-          <td onclick="window.location='{{ url_for('trade_detail', trade_id=t['id']) }}'"
-              style="cursor:pointer;">{{ t['trade_date'] }}</td>
-          <td onclick="window.location='{{ url_for('trade_detail', trade_id=t['id']) }}'"
-              style="cursor:pointer;">{{ t['symbol'] }}</td>
-          <td>{{ t['timeframe'] }}</td>
-          <td>{{ t['direction'] }}</td>
-          <td>{{ t['entry_price'] }}</td>
-          <td>{{ t['stop_loss'] }}</td>
-          <td>{{ t['take_profit'] }}</td>
-          <td><span class="grade">{{ t['grade'] or '-' }}</span></td>
-          <td>
-            {% if (t['result'] or '').upper() == 'WIN' %}
-              <span class="badge badge-win">WIN</span>
-            {% elif (t['result'] or '').upper() == 'LOSE' %}
-              <span class="badge badge-lose">LOSE</span>
-            {% else %}
-              -
-            {% endif %}
-          </td>
-          <td>{{ t['strategy_tag'] }}</td>
-          <td>{{ '%.2f'|format(t['rr_ratio']) if t['rr_ratio'] is not none else '-' }}</td>
-          <td>{{ '%.2f'|format(t['realized_r']) if t['realized_r'] is not none else '-' }}</td>
-          <td>{{ t['status'] or '-' }}</td>
-          <td><a href="{{ url_for('edit_trade', trade_id=t['id']) }}">Edit</a></td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    <div class="stats-grid" style="margin-top:18px;">
+        <div class="stat-pill">
+            <div class="stat-label">Closed trades</div>
+            <div class="stat-value">{{ stats.total }}</div>
+        </div>
+        <div class="stat-pill">
+            <div class="stat-label">Win rate</div>
+            <div class="stat-value stat-value-accent">
+                {{ "%.1f"|format(stats.win_rate) }}%
+            </div>
+        </div>
+        <div class="stat-pill">
+            <div class="stat-label">Avg R multiple</div>
+            <div class="stat-value">
+                {{ "%.2f"|format(stats.avg_realized_r) }}
+            </div>
+        </div>
+        <div class="stat-pill">
+            <div class="stat-label">Discipline score</div>
+            <div class="stat-value">
+                {{ "%.1f"|format(stats.discipline_score) }}%
+            </div>
+        </div>
+    </div>
 </div>
 
-{% if stats.equity_points|length > 0 %}
-<script>
-  const labels = {{ stats.equity_labels|tojson }};
-  const dataPoints = {{ stats.equity_points|tojson }};
-  const ctx = document.getElementById('equityChart').getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: dataPoints,
-        tension: 0.35,
-        borderColor: '#38bdf8',
-        backgroundColor: 'rgba(56,189,248,0.16)',
-        borderWidth: 2,
-        pointRadius: 0,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display:false } },
-      scales: {
-        x: { display:false },
-        y: {
-          ticks: { color:'#9ca3af', font:{size:11} },
-          grid: { color:'rgba(31,41,55,0.7)' }
-        }
-      }
-    }
-  });
-</script>
-{% endif %}
+<div class="glass-card" style="margin-top:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div>
+            <div class="section-heading">Trade Log (owner)</div>
+            <p class="section-sub">
+                Full list of trades in reverse chronological order. Edit, review, or delete logs from here.
+            </p>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);">
+            Clicking row in public page is read-only — editing hanya dari dashboard ini.
+        </div>
+    </div>
+
+    <div class="glass-card-soft" style="margin-top:16px;overflow-x:auto;">
+        <table>
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Symbol</th>
+                <th>TF</th>
+                <th>Dir</th>
+                <th>Entry</th>
+                <th>SL</th>
+                <th>TP</th>
+                <th>Status</th>
+                <th>Result</th>
+                <th>R</th>
+                <th style="text-align:right;">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for t in trades %}
+                <tr>
+                    <td>{{ t.trade_date or '-' }}</td>
+                    <td>{{ t.symbol or '-' }}</td>
+                    <td>{{ t.timeframe or '-' }}</td>
+                    <td>{{ (t.direction or '')|upper }}</td>
+                    <td>{{ "%.4f"|format(t.entry_price) if t.entry_price is not none else '-' }}</td>
+                    <td>{{ "%.4f"|format(t.stop_loss) if t.stop_loss is not none else '-' }}</td>
+                    <td>{{ "%.4f"|format(t.take_profit) if t.take_profit is not none else '-' }}</td>
+                    <td>{{ (t.status or '')|upper }}</td>
+                    <td>{{ (t.result or '')|upper }}</td>
+                    <td>{{ "%.2f"|format(t.realized_r) if t.realized_r is not none else '-' }}</td>
+                    <td style="text-align:right;white-space:nowrap;">
+                        <a href="{{ url_for('trade_detail', trade_id=t.id) }}"
+                           class="filter-btn" style="font-size:11px;">
+                            View
+                        </a>
+                        <a href="{{ url_for('edit_trade', trade_id=t.id) }}"
+                           class="filter-btn" style="font-size:11px;">
+                            Edit
+                        </a>
+                        <form method="post"
+                              action="{{ url_for('delete_trade', trade_id=t.id) }}"
+                              style="display:inline;"
+                              onsubmit="return confirm('Delete this trade permanently?');">
+                            <button type="submit"
+                                    class="filter-btn"
+                                    style="font-size:11px;color:#fca5a5;border-color:rgba(248,113,113,0.7);">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="11" style="text-align:center;color:var(--text-muted);padding:14px 0;">
+                        No trades yet. Start by logging your first case study using the “New trade” button.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% endblock %}
