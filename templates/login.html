@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="max-width:360px;margin:40px auto;">
+  <h2 style="margin:0 0 10px;">Login</h2>
+  {% if error %}
+    <p style="color:#ef4444;font-size:13px;margin-top:0;">{{ error }}</p>
+  {% endif %}
+
+  <form action="{{ url_for('login') }}" method="post">
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <div style="margin-bottom:10px;">
+      <label>Username</label>
+      <input name="username" autocomplete="username">
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <label>Password</label>
+      <input type="password" name="password" autocomplete="current-password">
+    </div>
+
+    <button type="submit" style="width:100%;">Login</button>
+  </form>
+
+  <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:8px;">
+    Private access for the portfolio owner.
+  </p>
+</div>
+{% endblock %}

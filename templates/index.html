@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="margin:0 0 4px;">Owner Dashboard</h1>
+<p style="font-size:13px;color:#9ca3af;margin:0 0 14px;">
+  Internal view with private notes and admin controls.
+</p>
+
+<div class="card">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+    <div>
+      <div class="stat-label">Closed trades</div>
+      <div class="stat-value">{{ stats.total }}</div>
+    </div>
+    <div>
+      <div class="stat-label">Win rate</div>
+      <div class="stat-value">{{ stats.win_rate }}%</div>
+    </div>
+    <div>
+      <div class="stat-label">Average R:R</div>
+      <div class="stat-value">{{ stats.avg_rr }}</div>
+    </div>
+    <div>
+      <div class="stat-label">Average R-multiple</div>
+      <div class="stat-value">{{ stats.avg_realized_r }}</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;">
+    <span class="pill">
+      <span class="pill-dot"></span>
+      One trade = one case study for my own review.
+    </span>
+  </div>
+</div>
+
+{% if featured %}
+  <div class="card">
+    <h3 style="margin-top:0;">Featured Case Studies</h3>
+    <p style="font-size:12px;color:#9ca3af;margin-top:0;">
+      Trades that best represent my style and review quality.
+    </p>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;">
+      {% for t in featured %}
+        <div style="flex:1 1 220px;border-radius:14px;border:1px solid #1f2937;padding:10px 12px;">
+          <div style="font-size:13px;font-weight:500;">{{ t['symbol'] }} · {{ t['direction'] }}</div>
+          <div style="font-size:11px;color:#9ca3af;">{{ t['trade_date'] }} · TF {{ t['timeframe'] }}</div>
+          <div style="margin-top:6px;font-size:12px;">
+            <span class="grade">{{ t['grade'] or '-' }}</span>
+            {% if t['strategy_tag'] %}
+              <span class="chip" style="margin-left:4px;">{{ t['strategy_tag'] }}</span>
+            {% endif %}
+          </div>
+          <div style="margin-top:6px;font-size:12px;">
+            RR: {{ '%.2f'|format(t['rr_ratio']) if t['rr_ratio'] is not none else '-' }} ·
+            R: {{ '%.2f'|format(t['realized_r']) if t['realized_r'] is not none else '-' }}
+          </div>
+          <div style="margin-top:8px;">
+            <a href="{{ url_for('trade_detail', trade_id=t['id']) }}" style="font-size:12px;">View case &rarr;</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{% if stats.equity_points|length > 0 %}
+  <div class="card">
+    <h3 style="margin-top:0;">Equity Curve (R-multiple)</h3>
+    <canvas id="equityChart" height="80"></canvas>
+  </div>
+{% endif %}
+
+{% if stats.tf_stats %}
+  <div class="card">
+    <h3 style="margin-top:0;">Timeframe Performance</h3>
+    <table>
+      <thead><tr><th>TF</th><th>Trades</th><th>Win%</th><th>Avg R</th></tr></thead>
+      <tbody>
+      {% for tf, data in stats.tf_stats.items() %}
+        <tr>
+          <td>{{ tf }}</td>
+          <td>{{ data.count }}</td>
+          <td>{{ data.win_rate }}%</td>
+          <td>{{ data.avg_r }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+<div class="card">
+  <h3 style="margin-top:0;">Full Trade Log</h3>
+  <p style="font-size:12px;color:#9ca3af;margin-top:0;">
+    Click any row to open the full case study.
+  </p>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+      <tr>
+        <th>Date</th><th>Symbol</th><th>TF</th><th>Dir</th>
+        <th>Entry</th><th>SL</th><th>TP</th>
+        <th>Grade</th><th>Result</th>
+        <th>Strategy</th><th>R:R</th><th>R</th>
+        <th>Status</th><th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for t in trades %}
+        <tr>
+          <td onclick="window.location='{{ url_for('trade_detail', trade_id=t['id']) }}'"
+              style="cursor:pointer;">{{ t['trade_date'] }}</td>
+          <td onclick="window.location='{{ url_for('trade_detail', trade_id=t['id']) }}'"
+              style="cursor:pointer;">{{ t['symbol'] }}</td>
+          <td>{{ t['timeframe'] }}</td>
+          <td>{{ t['direction'] }}</td>
+          <td>{{ t['entry_price'] }}</td>
+          <td>{{ t['stop_loss'] }}</td>
+          <td>{{ t['take_profit'] }}</td>
+          <td><span class="grade">{{ t['grade'] or '-' }}</span></td>
+          <td>
+            {% if (t['result'] or '').upper() == 'WIN' %}
+              <span class="badge badge-win">WIN</span>
+            {% elif (t['result'] or '').upper() == 'LOSE' %}
+              <span class="badge badge-lose">LOSE</span>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>{{ t['strategy_tag'] }}</td>
+          <td>{{ '%.2f'|format(t['rr_ratio']) if t['rr_ratio'] is not none else '-' }}</td>
+          <td>{{ '%.2f'|format(t['realized_r']) if t['realized_r'] is not none else '-' }}</td>
+          <td>{{ t['status'] or '-' }}</td>
+          <td><a href="{{ url_for('edit_trade', trade_id=t['id']) }}">Edit</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if stats.equity_points|length > 0 %}
+<script>
+  const labels = {{ stats.equity_labels|tojson }};
+  const dataPoints = {{ stats.equity_points|tojson }};
+  const ctx = document.getElementById('equityChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: dataPoints,
+        tension: 0.35,
+        borderColor: '#38bdf8',
+        backgroundColor: 'rgba(56,189,248,0.16)',
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display:false } },
+      scales: {
+        x: { display:false },
+        y: {
+          ticks: { color:'#9ca3af', font:{size:11} },
+          grid: { color:'rgba(31,41,55,0.7)' }
+        }
+      }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

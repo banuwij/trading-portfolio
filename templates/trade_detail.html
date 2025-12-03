@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('public_view') }}" style="font-size:12px;color:#9ca3af;">&larr; Back to public log</a>
+
+<div class="card" style="margin-top:10px;">
+  <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;">
+    <div style="flex:2 1 260px;">
+      <h2 style="margin:0 0 4px;">
+        {{ trade['symbol'] }} · {{ trade['timeframe'] }} · {{ direction }}
+      </h2>
+      <p style="font-size:12px;color:#9ca3af;margin:0 0 6px;">
+        {{ trade['trade_date'] }} · {{ trade['market_condition'] or 'Market context not tagged' }}
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;">
+        {% if status %}
+          {% if status == 'PLANNED' %}
+            <span class="status-badge status-planned">
+              <span class="status-dot"></span> Planned
+            </span>
+          {% elif status == 'ACTIVE' %}
+            <span class="status-badge status-active">
+              <span class="status-dot"></span> Active
+            </span>
+          {% elif status == 'CLOSED' %}
+            <span class="status-badge status-closed">
+              <span class="status-dot"></span> Closed
+            </span>
+          {% endif %}
+        {% endif %}
+
+        {% if result == 'WIN' %}
+          <span class="badge badge-win">WIN</span>
+        {% elif result == 'LOSE' %}
+          <span class="badge badge-lose">LOSE</span>
+        {% endif %}
+
+        {% if trade['grade'] %}
+          <span class="grade">Grade {{ trade['grade'] }}</span>
+        {% endif %}
+
+        {% if trade['strategy_tag'] %}
+          <span class="chip">{{ trade['strategy_tag'] }}</span>
+        {% endif %}
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
+        <div>
+          <div class="stat-label">Entry</div>
+          <div class="stat-value">{{ trade['entry_price'] }}</div>
+        </div>
+        <div>
+          <div class="stat-label">Stop loss</div>
+          <div class="stat-value">{{ trade['stop_loss'] }}</div>
+        </div>
+        <div>
+          <div class="stat-label">Take profit</div>
+          <div class="stat-value">{{ trade['take_profit'] }}</div>
+        </div>
+        <div>
+          <div class="stat-label">Risk %</div>
+          <div class="stat-value">{{ trade['risk_percent'] or 0 }}%</div>
+        </div>
+        <div>
+          <div class="stat-label">R:R</div>
+          <div class="stat-value">
+            {{ '%.2f'|format(trade['rr_ratio']) if trade['rr_ratio'] is not none else '-' }}
+          </div>
+        </div>
+        <div>
+          <div class="stat-label">Realized R</div>
+          <div class="stat-value">
+            {{ '%.2f'|format(trade['realized_r']) if trade['realized_r'] is not none else '-' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1 1 220px;">
+      <h3 style="margin:0 0 4px;">Behaviour checklist</h3>
+      <ul style="list-style:none;padding:0;margin:0;font-size:12px;color:#e5e7eb;">
+        <li>
+          {% if trade['followed_plan'] == 1 %}✅{% else %}⬜{% endif %}
+          Followed written plan
+        </li>
+        <li>
+          {% if trade['no_revenge'] == 1 %}✅{% else %}⬜{% endif %}
+          No revenge trade
+        </li>
+        <li>
+          {% if trade['no_fomo'] == 1 %}✅{% else %}⬜{% endif %}
+          No FOMO entry
+        </li>
+        <li>
+          {% if trade['respected_rr'] == 1 %}✅{% else %}⬜{% endif %}
+          Respected risk / reward
+        </li>
+      </ul>
+
+      {% if trade['strategy_tag'] %}
+        {% set tag_up = (trade['strategy_tag'] or '').upper() %}
+        <div style="margin-top:10px;">
+          <div class="stat-label">Strategy notes</div>
+          <p style="font-size:12px;color:#9ca3af;margin:4px 0 0;">
+            {{ strategy_info.get(tag_up, 'No specific description configured for this tag yet.') }}
+          </p>
+        </div>
+      {% endif %}
+
+      {% if is_admin %}
+        <div style="margin-top:12px;">
+          <a class="btn-outline" href="{{ url_for('edit_trade', trade_id=trade['id']) }}">
+            Edit trade
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Summary</h3>
+  {% if trade['notes_public'] %}
+    <p style="font-size:13px;color:#e5e7eb;white-space:pre-wrap;margin:0;">
+      {{ trade['notes_public'] }}
+    </p>
+  {% else %}
+    <p style="font-size:13px;color:#e5e7eb;margin:0 0 6px;">
+      {{ direction or 'Trade' }} {{ trade['symbol'] or '' }} on {{ trade['timeframe'] or 'N/A' }} was
+      taken in a {{ trade['market_condition'] or 'market context not specified' }} environment with
+      around {{ trade['risk_percent'] or 0 }}% risk.
+      {% if status == 'PLANNED' %}
+        This case is currently in the planning stage, with levels and idea documented but no result yet.
+      {% elif status == 'ACTIVE' %}
+        The trade is currently active; execution details and outcome will be updated once closed.
+      {% elif status == 'CLOSED' and result %}
+        The trade is closed as a {{ result }} with
+        {% if trade['rr_ratio'] is not none %} an R:R of {{ '%.2f'|format(trade['rr_ratio']) }}{% endif %}
+        {% if trade['realized_r'] is not none %} and a realized result of {{ '%.2f'|format(trade['realized_r']) }}R{% endif %}.
+      {% else %}
+        Status is not fully tagged yet; this entry is kept for tracking and review.
+      {% endif %}
+    </p>
+    <p style="font-size:12px;color:#9ca3af;margin:0;">
+      For full context of how I think, please review both the entry levels and behaviour checklist above.
+    </p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0;">Screenshots</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:16px;">
+    <div style="flex:1 1 260px;">
+      <div class="stat-label">Before / idea</div>
+      {% if trade['screenshot_before_filename'] %}
+        <img src="{{ url_for('static', filename='uploads/' ~ trade['screenshot_before_filename']) }}"
+             alt="Before screenshot"
+             style="width:100%;border-radius:16px;margin-top:6px;">
+      {% else %}
+        <p style="font-size:12px;color:#9ca3af;margin-top:6px;">No 'before' screenshot uploaded.</p>
+      {% endif %}
+    </div>
+    <div style="flex:1 1 260px;">
+      <div class="stat-label">After / outcome</div>
+      {% if trade['screenshot_after_filename'] %}
+        <img src="{{ url_for('static', filename='uploads/' ~ trade['screenshot_after_filename']) }}"
+             alt="After screenshot"
+             style="width:100%;border-radius:16px;margin-top:6px;">
+      {% else %}
+        <p style="font-size:12px;color:#9ca3af;margin-top:6px;">No 'after' screenshot uploaded yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
