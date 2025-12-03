@@ -25,7 +25,7 @@ app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB
 app.secret_key = "SUPER_SECRET_KEY_BANU"
 
 ADMIN_USERNAME = "banu"
-ADMIN_PASSWORD_HASH = generate_password_hash("banu1234567890")
+ADMIN_PASSWORD_HASH = generate_password_hash("superadmin123")
 
 # Strategy tag descriptions displayed in Public View
 STRATEGY_INFO = {
@@ -342,7 +342,7 @@ def index():
 
 
 # ======================
-# PUBLIC VIEW
+# PUBLIC VIEW (GLASSMORPHISM)
 # ======================
 
 @app.route("/public")
@@ -645,6 +645,37 @@ def edit_trade(trade_id):
 
     conn.close()
     return render_template("edit_trade.html", trade=trade, is_admin=is_admin(), is_public=False)
+
+
+# ======================
+# ADMIN: DELETE TRADE
+# ======================
+
+@app.route("/admin/delete/<int:trade_id>", methods=["POST"])
+@login_required
+def delete_trade(trade_id):
+    conn = get_db()
+    trade = conn.execute(
+        "SELECT screenshot_before_filename, screenshot_after_filename FROM trades WHERE id = ?",
+        (trade_id,),
+    ).fetchone()
+
+    if trade:
+        # hapus file screenshot kalau ada
+        for fname in [trade["screenshot_before_filename"], trade["screenshot_after_filename"]]:
+            if fname:
+                path = os.path.join(app.config["UPLOAD_FOLDER"], fname)
+                try:
+                    if os.path.exists(path):
+                        os.remove(path)
+                except OSError:
+                    pass
+
+        conn.execute("DELETE FROM trades WHERE id = ?", (trade_id,))
+        conn.commit()
+
+    conn.close()
+    return redirect(url_for("index"))
 
 
 # ======================
