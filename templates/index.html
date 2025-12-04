@@ -4,127 +4,117 @@
 {% block content %}
 
 <div class="glass-card">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;">
-        <div>
-            <div class="section-heading">Owner Dashboard</div>
-            <p class="section-sub">
-                Private workspace to log trades, upload screenshots, and refine your playbook.
-                Only you can see this view.
-            </p>
-            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                <span class="tag-pill">Planned: {{ planned_count }}</span>
-                <span class="tag-pill">Active: {{ active_count }}</span>
-                <span class="tag-pill">Closed: {{ closed_count }}</span>
-            </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-            <a href="{{ url_for('new_trade') }}" class="btn btn-primary">+ New trade</a>
-            <a href="{{ url_for('public_view') }}" class="btn-outline" style="font-size:12px;">
-                Open public page →
-            </a>
-        </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+    <div>
+      <div class="section-heading">Owner Dashboard</div>
+      <p class="section-sub">
+        Private workspace to log trades, upload screenshots, and refine your playbook.
+        Only you can see this view.
+      </p>
+      <p class="section-sub" style="margin-top:6px;">
+        Planned: {{ planned_count }} · Active: {{ active_count }} · Closed: {{ closed_count }}
+      </p>
     </div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+      <a href="{{ url_for('new_trade') }}" class="btn-primary">+ New trade</a>
+      <a href="{{ url_for('public_root') }}" class="btn-outline" style="font-size:12px;">
+        Open public page →
+      </a>
+    </div>
+  </div>
 
-    <div class="stats-grid" style="margin-top:18px;">
-        <div class="stat-pill">
-            <div class="stat-label">Closed trades</div>
-            <div class="stat-value">{{ stats.total }}</div>
-        </div>
-        <div class="stat-pill">
-            <div class="stat-label">Win rate</div>
-            <div class="stat-value stat-value-accent">
-                {{ "%.1f"|format(stats.win_rate) }}%
-            </div>
-        </div>
-        <div class="stat-pill">
-            <div class="stat-label">Avg R multiple</div>
-            <div class="stat-value">
-                {{ "%.2f"|format(stats.avg_realized_r) }}
-            </div>
-        </div>
-        <div class="stat-pill">
-            <div class="stat-label">Discipline score</div>
-            <div class="stat-value">
-                {{ "%.1f"|format(stats.discipline_score) }}%
-            </div>
-        </div>
+  <div style="display:flex;gap:18px;margin-top:22px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:180px;">
+      <div class="section-sub">Closed trades</div>
+      <div style="font-size:18px;font-weight:600;margin-top:4px;">{{ closed_count }}</div>
     </div>
+    <div style="flex:1;min-width:180px;">
+      <div class="section-sub">Win rate</div>
+      <div style="font-size:18px;font-weight:600;margin-top:4px;">{{ win_rate }}%</div>
+    </div>
+    <div style="flex:1;min-width:180px;">
+      <div class="section-sub">Average R multiple</div>
+      <div style="font-size:18px;font-weight:600;margin-top:4px;">{{ avg_r }}</div>
+    </div>
+    <div style="flex:1;min-width:180px;">
+      <div class="section-sub">Discipline score</div>
+      <div style="font-size:18px;font-weight:600;margin-top:4px;">{{ discipline_score }}%</div>
+    </div>
+  </div>
 </div>
 
 <div class="glass-card" style="margin-top:20px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-        <div>
-            <div class="section-heading">Trade Log (owner)</div>
-            <p class="section-sub">
-                Full list of trades in reverse chronological order. Edit, review, or delete logs from here.
-            </p>
-        </div>
-        <div style="font-size:12px;color:var(--text-muted);">
-            Clicking row in public page is read-only — editing hanya dari dashboard ini.
-        </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div class="section-heading" style="font-size:16px;">Trade Log (owner)</div>
+      <p class="section-sub">
+        Full list of trades in reverse chronological order. Edit, review, or delete logs from here.
+      </p>
     </div>
+    <p class="section-sub" style="max-width:260px;text-align:right;">
+      Clicking row in public page is read-only — editing hanya dari dashboard ini.
+    </p>
+  </div>
 
-    <div class="glass-card-soft" style="margin-top:16px;overflow-x:auto;">
-        <table>
-            <thead>
-            <tr>
-                <th>Date</th>
-                <th>Symbol</th>
-                <th>TF</th>
-                <th>Dir</th>
-                <th>Entry</th>
-                <th>SL</th>
-                <th>TP</th>
-                <th>Status</th>
-                <th>Result</th>
-                <th>R</th>
-                <th style="text-align:right;">Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for t in trades %}
-                <tr>
-                    <td>{{ t.trade_date or '-' }}</td>
-                    <td>{{ t.symbol or '-' }}</td>
-                    <td>{{ t.timeframe or '-' }}</td>
-                    <td>{{ (t.direction or '')|upper }}</td>
-                    <td>{{ "%.4f"|format(t.entry_price) if t.entry_price is not none else '-' }}</td>
-                    <td>{{ "%.4f"|format(t.stop_loss) if t.stop_loss is not none else '-' }}</td>
-                    <td>{{ "%.4f"|format(t.take_profit) if t.take_profit is not none else '-' }}</td>
-                    <td>{{ (t.status or '')|upper }}</td>
-                    <td>{{ (t.result or '')|upper }}</td>
-                    <td>{{ "%.2f"|format(t.realized_r) if t.realized_r is not none else '-' }}</td>
-                    <td style="text-align:right;white-space:nowrap;">
-                        <a href="{{ url_for('trade_detail', trade_id=t.id) }}"
-                           class="filter-btn" style="font-size:11px;">
-                            View
-                        </a>
-                        <a href="{{ url_for('edit_trade', trade_id=t.id) }}"
-                           class="filter-btn" style="font-size:11px;">
-                            Edit
-                        </a>
-                        <form method="post"
-                              action="{{ url_for('delete_trade', trade_id=t.id) }}"
-                              style="display:inline;"
-                              onsubmit="return confirm('Delete this trade permanently?');">
-                            <button type="submit"
-                                    class="filter-btn"
-                                    style="font-size:11px;color:#fca5a5;border-color:rgba(248,113,113,0.7);">
-                                Delete
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td colspan="11" style="text-align:center;color:var(--text-muted);padding:14px 0;">
-                        No trades yet. Start by logging your first case study using the “New trade” button.
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Symbol</th>
+        <th>TF</th>
+        <th>Dir</th>
+        <th>Entry</th>
+        <th>SL</th>
+        <th>TP</th>
+        <th>Status</th>
+        <th>Result</th>
+        <th>R</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% if trades %}
+      {% for t in trades %}
+      <tr>
+        <td>{{ t.trade_date }}</td>
+        <td>{{ t.symbol }}</td>
+        <td>{{ t.timeframe }}</td>
+        <td>{{ t.direction }}</td>
+        <td>{{ t.entry_price or "-" }}</td>
+        <td>{{ t.stop_loss or "-" }}</td>
+        <td>{{ t.take_profit or "-" }}</td>
+        <td>{{ t.status }}</td>
+        <td>
+          {% if t.result == "WIN" %}
+            <span class="badge badge-win">Win</span>
+          {% elif t.result == "LOSE" %}
+            <span class="badge badge-lose">Lose</span>
+          {% elif t.result == "BE" %}
+            <span class="badge badge-pending">BE</span>
+          {% else %}
+            <span class="badge badge-pending">Pending</span>
+          {% endif %}
+        </td>
+        <td>{{ t.result_r if t.result_r is not none else "-" }}</td>
+        <td>
+          <a href="{{ url_for('edit_trade', trade_id=t.id) }}" class="link-pill-outline" style="padding:3px 10px;font-size:10px;">Edit</a>
+          <form action="{{ url_for('delete_trade', trade_id=t.id) }}" method="post" style="display:inline;">
+            <button type="submit" class="btn-outline" style="padding:3px 10px;font-size:10px;background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.7);">
+              Delete
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan="11" style="text-align:center;color:var(--text-muted);padding:18px 0;">
+          No trades yet. Start by logging your first case study using the “New trade” button.
+        </td>
+      </tr>
+    {% endif %}
+    </tbody>
+  </table>
 </div>
 
 {% endblock %}
