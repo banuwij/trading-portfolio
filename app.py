@@ -30,7 +30,7 @@ app.config["UPLOAD_FOLDER"] = str(UPLOAD_FOLDER)
 
 # admin credential (bisa di-set di Railway env)
 ADMIN_USERNAME = os.environ.get("APP_ADMIN_USER", "banu")
-ADMIN_PASSWORD = os.environ.get("APP_ADMIN_PASS", "banu-portfolio-123")
+ADMIN_PASSWORD = os.environ.get("APP_ADMIN_PASS", "Banu22")
 
 
 # -----------------------------------------------------------------------------
