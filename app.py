@@ -13,6 +13,7 @@ from werkzeug.utils import secure_filename
 # ======================
 # CONFIG
 # ======================
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "trades.db")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
@@ -21,23 +22,24 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
 app.secret_key = "SUPER_SECRET_KEY_BANU"
 
+# ADMIN LOGIN (sederhana)
 ADMIN_USERNAME = "banu"
 ADMIN_PASSWORD_HASH = generate_password_hash("superadmin123")
 
-# Strategy tag descriptions displayed in Public View
+# Deskripsi strategy tag (untuk public view playbook)
 STRATEGY_INFO = {
-    "SND": "Supply & Demand continuation after liquidity sweep.",
-    "MR": "Mean reversion following extended move away from value.",
-    "BO": "Breakout & Retest strategy with volume confirmation.",
-    "SWING": "Swing trading on higher timeframe structures.",
-    "INTRA": "Intraday momentum based within specific trading sessions.",
+    "SND": "Supply & demand continuation after liquidity sweep.",
+    "MR": "Mean reversion after extended move away from value.",
+    "BO": "Breakout & retest strategy with structural confirmation.",
+    "SWING": "Swing trading based on higher timeframe structures.",
+    "INTRA": "Intraday momentum within specific trading sessions.",
 }
 
 # ======================
-# DB Helper
+# DB HELPER
 # ======================
 
 def get_db():
@@ -104,16 +106,19 @@ def login_required(view):
 
 
 # ======================
-# Risk and R Multiple Calculation
+# RISK & R MULTIPLE
 # ======================
 
 def compute_rr_and_realized(direction, entry, sl, tp, result):
+    """
+    Hitung R:R theoretical (rr_ratio) dan realized R (realized_r) berdasarkan result.
+    """
     try:
         if entry is None or sl is None or tp is None:
             return None, None
 
         direction = (direction or "").upper()
-        res = (result or "").upper()
+        result = (result or "").upper()
         if direction not in ("BUY", "SELL"):
             return None, None
 
@@ -129,9 +134,9 @@ def compute_rr_and_realized(direction, entry, sl, tp, result):
 
         rr = reward / risk
 
-        if res == "WIN":
+        if result == "WIN":
             realized_r = rr
-        elif res == "LOSE":
+        elif result == "LOSE":
             realized_r = -1.0
         else:
             realized_r = None
@@ -142,7 +147,7 @@ def compute_rr_and_realized(direction, entry, sl, tp, result):
 
 
 # ======================
-# Dashboard helpers
+# DASHBOARD HELPERS
 # ======================
 
 def _load_trades_for_dashboard():
@@ -156,13 +161,15 @@ def _load_trades_for_dashboard():
 
 def _get_unique_strategies(trades):
     return sorted(
-        {(t["strategy_tag"] or "").strip()
-         for t in trades if (t["strategy_tag"] or "").strip()}
+        {
+            (t["strategy_tag"] or "").strip()
+            for t in trades
+            if (t["strategy_tag"] or "").strip()
+        }
     )
 
 
 def _build_dashboard_stats(trades):
-    # closed trades only (have result)
     closed = [t for t in trades if (t["result"] or "")]
     total = len(closed)
     wins = len([t for t in closed if (t["result"] or "").upper() == "WIN"])
@@ -178,7 +185,7 @@ def _build_dashboard_stats(trades):
     avg_risk = round(sum(risk_list) / len(risk_list), 2) if risk_list else 0.0
     max_risk = round(max(risk_list), 2) if risk_list else 0.0
 
-    # equity curve + max drawdown
+    # equity & drawdown
     equity_points = []
     labels = []
     cumulative = 0.0
@@ -191,9 +198,9 @@ def _build_dashboard_stats(trades):
         labels.append(f"{t['trade_date']} {t['symbol']} {t['direction']}")
         if cumulative > peak:
             peak = cumulative
-        drawdown = peak - cumulative
-        if drawdown > max_drawdown:
-            max_drawdown = drawdown
+        dd = peak - cumulative
+        if dd > max_drawdown:
+            max_drawdown = dd
 
     max_drawdown = round(max_drawdown, 2)
 
@@ -222,7 +229,7 @@ def _build_dashboard_stats(trades):
             (data["wins"] / data["count"]) * 100, 1
         ) if data["count"] > 0 else 0.0
 
-    # strategy stats (closed)
+    # strategy stats
     strategy_stats = {}
     for t in closed:
         tag = (t["strategy_tag"] or "").strip()
@@ -236,7 +243,7 @@ def _build_dashboard_stats(trades):
         elif (t["result"] or "").upper() == "LOSE":
             strategy_stats[tag]["loses"] += 1
 
-    # discipline score (closed)
+    # discipline score
     disciplined = 0
     for t in closed:
         if (
@@ -342,7 +349,7 @@ def index():
 
 
 # ======================
-# PUBLIC VIEW (GLASSMORPHISM)
+# PUBLIC VIEW
 # ======================
 
 @app.route("/public")
@@ -366,7 +373,11 @@ def public_view():
     featured = [t for t in trades if t["featured"] == 1]
     featured = list(reversed(featured))[-3:] if featured else []
 
-    used_strategies = sorted({(t["strategy_tag"] or "").upper() for t in trades if (t["strategy_tag"] or "").strip()})
+    used_strategies = sorted({
+        (t["strategy_tag"] or "").upper()
+        for t in trades
+        if (t["strategy_tag"] or "").strip()
+    })
     playbook = []
     for tag in used_strategies:
         desc = STRATEGY_INFO.get(tag, "No description yet – used as tag in my trades.")
@@ -661,7 +672,6 @@ def delete_trade(trade_id):
     ).fetchone()
 
     if trade:
-        # hapus file screenshot kalau ada
         for fname in [trade["screenshot_before_filename"], trade["screenshot_after_filename"]]:
             if fname:
                 path = os.path.join(app.config["UPLOAD_FOLDER"], fname)
@@ -679,8 +689,9 @@ def delete_trade(trade_id):
 
 
 # ======================
-# MAIN
+# MAIN (LOCAL DEV)
 # ======================
 
 if __name__ == "__main__":
+    # Untuk lokal: python app.py
     app.run(debug=True)
