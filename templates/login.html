@@ -1,44 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Login · Banu Trading Portfolio{% endblock %}
+{% block title %}Owner Login · Banu Trading Portfolio{% endblock %}
 
 {% block content %}
 
-<div class="page-center">
-  <div class="glass-card glass-card-compact" style="max-width:420px;width:100%;">
-    <div class="section-heading" style="margin-bottom:4px;">Login</div>
-    <p class="section-sub" style="margin-bottom:16px;">
-      Private access to your owner dashboard.
+<div class="glass-card" style="max-width:520px;margin:0 auto;">
+  <div style="text-align:center;margin-bottom:16px;">
+    <div class="section-heading">Login</div>
+    <p class="section-sub" style="margin-top:4px;">
+      Private access for the portfolio owner.
     </p>
-
-    {% if error %}
-      <div class="alert-danger">
-        {{ error }}
-      </div>
-    {% endif %}
-
-    <form method="post" action="{{ url_for('login') }}" class="form-grid">
-      <input type="hidden" name="next" value="{{ next or url_for('index') }}"/>
-
-      <label class="form-field">
-        <span class="form-label">Username</span>
-        <input type="text" name="username" required autocomplete="username"
-               value="{{ request.form.username or '' }}">
-      </label>
-
-      <label class="form-field">
-        <span class="form-label">Password</span>
-        <input type="password" name="password" required autocomplete="current-password">
-      </label>
-
-      <button type="submit" class="btn btn-primary" style="margin-top:8px;width:100%;">
-        Login
-      </button>
-
-      <p class="section-sub" style="text-align:center;margin-top:10px;font-size:12px;">
-        Portfolio is read-only for visitors. Only you can login here.
-      </p>
-    </form>
   </div>
+
+  <form method="post" style="display:flex;flex-direction:column;gap:14px;">
+
+    <label class="form-field">
+      <span class="form-label">Username</span>
+      <input type="text" name="username" required autocomplete="username">
+    </label>
+
+    <label class="form-field">
+      <span class="form-label">Password</span>
+      <input type="password" name="password" required autocomplete="current-password">
+    </label>
+
+    <button type="submit" class="btn-primary" style="margin-top:6px;width:100%;">
+      Login
+    </button>
+
+    <p class="section-sub" style="margin-top:10px;text-align:center;">
+      This page is not visible to hiring managers — they only see the public case-study view.
+    </p>
+  </form>
 </div>
 
 {% endblock %}
