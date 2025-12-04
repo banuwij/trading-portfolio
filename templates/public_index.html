@@ -1,181 +1,172 @@
 {% extends "base.html" %}
-{% block title %}Trading Case Study Portfolio · Public{% endblock %}
+{% block title %}Trading Case Study Portfolio · Banu{% endblock %}
 
 {% block content %}
 
-<div class="glass-card" style="margin-bottom: 20px;">
-    <div style="display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;">
-        <div style="max-width:460px;">
-            <div class="section-heading">Trading Case Study Portfolio</div>
-            <p class="section-sub">
-                Each trade here is documented as a mini case-study:
-                thesis, execution, and post-trade review. This page is designed for
-                hiring managers who want to see my edge, risk discipline, and how I think in real market conditions.
-            </p>
-            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
-                <span class="tag-pill">Planned: {{ planned_count }}</span>
-                <span class="tag-pill">Active: {{ active_count }}</span>
-                <span class="tag-pill">Closed: {{ closed_count }}</span>
-            </div>
-        </div>
-
-        <div style="flex:1;min-width:260px;">
-            <div class="section-sub" style="margin-bottom:6px;">Snapshot (closed trades)</div>
-            <div class="stats-grid">
-                <div class="stat-pill">
-                    <div class="stat-label">Closed trades</div>
-                    <div class="stat-value">{{ stats.total }}</div>
-                </div>
-                <div class="stat-pill">
-                    <div class="stat-label">Win rate</div>
-                    <div class="stat-value stat-value-accent">{{ "%.1f"|format(stats.win_rate) }}%</div>
-                </div>
-                <div class="stat-pill">
-                    <div class="stat-label">Avg R multiple</div>
-                    <div class="stat-value">{{ "%.2f"|format(stats.avg_realized_r) }}</div>
-                </div>
-                <div class="stat-pill">
-                    <div class="stat-label">Max drawdown (R)</div>
-                    <div class="stat-value">{{ "%.2f"|format(stats.max_drawdown) }}</div>
-                </div>
-            </div>
-        </div>
+<div class="glass-card">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+    <div>
+      <div class="section-heading">Trading Case Study Portfolio</div>
+      <p class="section-sub">
+        This portfolio showcases how I approach markets: structured setups, disciplined risk, and post-trade reviews.
+        Designed for hiring managers who want to see real decision-making, not only performance screenshots.
+      </p>
+      <button class="btn-primary" onclick="window.open('https://www.linkedin.com/in/banuwijaya','_blank')">
+        Hire me on LinkedIn ↗
+      </button>
     </div>
+
+    <div style="min-width:220px;">
+      <div class="section-sub">Snapshot</div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:8px;font-size:12px;">
+        <div>
+          <div class="section-sub">Closed trades</div>
+          <div style="font-size:18px;font-weight:600;margin-top:2px;">{{ closed_count }}</div>
+        </div>
+        <div>
+          <div class="section-sub">Win rate</div>
+          <div style="font-size:18px;font-weight:600;margin-top:2px;">{{ win_rate }}%</div>
+        </div>
+        <div>
+          <div class="section-sub">Average R:R</div>
+          <div style="font-size:18px;font-weight:600;margin-top:2px;">{{ avg_r }}</div>
+        </div>
+      </div>
+      <div class="section-sub" style="margin-top:8px;">Discipline score: {{ discipline_score }}%</div>
+    </div>
+  </div>
 </div>
 
-<div class="two-column">
-    <div class="glass-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;">
-            <div>
-                <div class="section-heading">Trade Log</div>
-                <p class="section-sub">
-                    Real-time status by lifecycle: planned, active, and closed.
-                    Click on any row for full pre/post trade details and screenshots.
-                </p>
-            </div>
-            <div>
-                <a href="{{ url_for('export_closed_csv') }}" class="btn-outline" style="font-size:12px;">
-                    Download closed trades (.csv)
-                </a>
-            </div>
-        </div>
+<div class="glass-card" style="margin-top:20px;">
+  <div class="section-heading" style="font-size:16px;">Planned setups</div>
+  <p class="section-sub">Trades in preparation phase. Thesis and risk defined, execution not started.</p>
 
-        <form method="get" class="filters-row" style="margin-top:14px;">
-            <select name="status" class="filter-select">
-                <option value="ALL" {% if filter_status == 'ALL' %}selected{% endif %}>Status: All</option>
-                <option value="PLANNED" {% if filter_status == 'PLANNED' %}selected{% endif %}>Planned</option>
-                <option value="ACTIVE" {% if filter_status == 'ACTIVE' %}selected{% endif %}>Active</option>
-                <option value="CLOSED" {% if filter_status == 'CLOSED' %}selected{% endif %}>Closed</option>
-            </select>
+  <table>
+    <thead>
+    <tr>
+      <th>Date</th>
+      <th>Symbol</th>
+      <th>TF</th>
+      <th>Dir</th>
+      <th>R:R</th>
+      <th>Grade</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if planned %}
+      {% for t in planned %}
+      <tr>
+        <td>{{ t.trade_date }}</td>
+        <td>{{ t.symbol }}</td>
+        <td>{{ t.timeframe }}</td>
+        <td>{{ t.direction }}</td>
+        <td>{{ t.rr_ratio if t.rr_ratio is not none else "-" }}</td>
+        <td>{{ t.grade or "-" }}</td>
+        <td>
+          <a href="{{ url_for('trade_detail', trade_id=t.id) }}" class="link-pill-outline" style="padding:3px 10px;font-size:10px;">
+            View case
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr><td colspan="7" style="text-align:center;padding:14px 0;color:var(--text-muted);">No planned setups at the moment.</td></tr>
+    {% endif %}
+    </tbody>
+  </table>
+</div>
 
-            <select name="direction" class="filter-select">
-                <option value="ALL" {% if filter_direction == 'ALL' %}selected{% endif %}>Dir: All</option>
-                <option value="BUY" {% if filter_direction == 'BUY' %}selected{% endif %}>Buy</option>
-                <option value="SELL" {% if filter_direction == 'SELL' %}selected{% endif %}>Sell</option>
-            </select>
+<div class="glass-card" style="margin-top:16px;">
+  <div class="section-heading" style="font-size:16px;">Active trades</div>
+  <p class="section-sub">Positions currently managed in the market.</p>
 
-            <select name="strategy" class="filter-select">
-                <option value="ALL" {% if filter_strategy == 'ALL' %}selected{% endif %}>Strategy: All</option>
-                {% for s in unique_strategies %}
-                    <option value="{{ s }}" {% if filter_strategy == s %}selected{% endif %}>{{ s }}</option>
-                {% endfor %}
-            </select>
+  <table>
+    <thead>
+    <tr>
+      <th>Date</th>
+      <th>Symbol</th>
+      <th>TF</th>
+      <th>Dir</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if active %}
+      {% for t in active %}
+      <tr>
+        <td>{{ t.trade_date }}</td>
+        <td>{{ t.symbol }}</td>
+        <td>{{ t.timeframe }}</td>
+        <td>{{ t.direction }}</td>
+        <td><span class="badge badge-pending">Active</span></td>
+        <td>
+          <a href="{{ url_for('trade_detail', trade_id=t.id) }}" class="link-pill-outline" style="padding:3px 10px;font-size:10px;">
+            View case
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr><td colspan="6" style="text-align:center;padding:14px 0;color:var(--text-muted);">No active trades.</td></tr>
+    {% endif %}
+    </tbody>
+  </table>
+</div>
 
-            <input type="text"
-                   name="symbol"
-                   value="{{ filter_symbol }}"
-                   class="filter-input"
-                   placeholder="Filter symbol (e.g. BTCUSDT)">
-            <button type="submit" class="filter-btn">Apply</button>
-        </form>
+<div class="glass-card" style="margin-top:16px;">
+  <div class="section-heading" style="font-size:16px;">Closed trades (case studies)</div>
+  <p class="section-sub">
+    Each row links to a full case study with before/after screenshots and a brief review.
+  </p>
 
-        <div class="glass-card-soft" style="margin-top:16px;overflow-x:auto;">
-            <table>
-                <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Symbol</th>
-                    <th>TF</th>
-                    <th>Dir</th>
-                    <th>Entry</th>
-                    <th>SL</th>
-                    <th>TP</th>
-                    <th>Grade</th>
-                    <th>Status</th>
-                    <th>Result</th>
-                    <th>R:R</th>
-                    <th>R</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for t in trades %}
-                    <tr onclick="window.location='{{ url_for('trade_detail', trade_id=t.id) }}'"
-                        style="cursor:pointer;">
-                        <td>{{ t.trade_date or '-' }}</td>
-                        <td>{{ t.symbol or '-' }}</td>
-                        <td>{{ t.timeframe or '-' }}</td>
-                        <td>{{ (t.direction or '')|upper }}</td>
-                        <td>{{ "%.4f"|format(t.entry_price) if t.entry_price is not none else '-' }}</td>
-                        <td>{{ "%.4f"|format(t.stop_loss) if t.stop_loss is not none else '-' }}</td>
-                        <td>{{ "%.4f"|format(t.take_profit) if t.take_profit is not none else '-' }}</td>
-                        <td>{{ t.grade or '-' }}</td>
-                        <td>
-                            {% set st = (t.status or '')|upper %}
-                            {% if st == 'PLANNED' %}
-                                <span class="badge-status badge-planned">Planned</span>
-                            {% elif st == 'ACTIVE' %}
-                                <span class="badge-status badge-active">Active</span>
-                            {% elif st == 'CLOSED' %}
-                                <span class="badge-status badge-closed">Closed</span>
-                            {% else %}
-                                <span class="badge-status">{{ st or '-' }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% set res = (t.result or '')|upper %}
-                            {% if res == 'WIN' %}
-                                <span class="badge-status badge-win">Win</span>
-                            {% elif res == 'LOSE' %}
-                                <span class="badge-status badge-loss">Loss</span>
-                            {% else %}
-                                <span class="badge-status">{{ res or '-' }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ "%.2f"|format(t.rr_ratio) if t.rr_ratio is not none else '-' }}</td>
-                        <td>{{ "%.2f"|format(t.realized_r) if t.realized_r is not none else '-' }}</td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="12" style="text-align:center;color:var(--text-muted);padding:14px 0;">
-                            No trades yet – once I log trades, they will appear here in real time.
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="glass-card">
-        <div class="section-heading">Strategy Playbook</div>
-        <p class="section-sub">
-            Quick context for the strategy tags used in this journal.
-        </p>
-        <div class="playbook-list" style="margin-top:14px;">
-            {% for s in playbook %}
-                <div class="glass-card-soft">
-                    <div class="playbook-item-title">
-                        <span class="tag-pill">{{ s.tag }}</span>
-                    </div>
-                    <div style="margin-top:6px;color:var(--text-muted);">
-                        {{ s.description }}
-                    </div>
-                </div>
-            {% else %}
-                <p class="section-sub">Strategy tags will appear automatically once trades are logged.</p>
-            {% endfor %}
-        </div>
-    </div>
+  <table>
+    <thead>
+    <tr>
+      <th>Date</th>
+      <th>Symbol</th>
+      <th>TF</th>
+      <th>Dir</th>
+      <th>Result</th>
+      <th>R</th>
+      <th>Grade</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if closed %}
+      {% for t in closed %}
+      <tr>
+        <td>{{ t.trade_date }}</td>
+        <td>{{ t.symbol }}</td>
+        <td>{{ t.timeframe }}</td>
+        <td>{{ t.direction }}</td>
+        <td>
+          {% if t.result == "WIN" %}
+            <span class="badge badge-win">Win</span>
+          {% elif t.result == "LOSE" %}
+            <span class="badge badge-lose">Lose</span>
+          {% elif t.result == "BE" %}
+            <span class="badge badge-pending">BE</span>
+          {% else %}
+            <span class="badge">N/A</span>
+          {% endif %}
+        </td>
+        <td>{{ t.result_r if t.result_r is not none else "-" }}</td>
+        <td>{{ t.grade or "-" }}</td>
+        <td>
+          <a href="{{ url_for('trade_detail', trade_id=t.id) }}" class="link-pill-outline" style="padding:3px 10px;font-size:10px;">
+            View case
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      <tr><td colspan="8" style="text-align:center;padding:14px 0;color:var(--text-muted);">No closed trades yet.</td></tr>
+    {% endif %}
+    </tbody>
+  </table>
 </div>
 
 {% endblock %}
