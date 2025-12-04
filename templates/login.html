@@ -1,29 +1,44 @@
 {% extends "base.html" %}
+{% block title %}Login · Banu Trading Portfolio{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width:360px;margin:40px auto;">
-  <h2 style="margin:0 0 10px;">Login</h2>
-  {% if error %}
-    <p style="color:#ef4444;font-size:13px;margin-top:0;">{{ error }}</p>
-  {% endif %}
 
-  <form action="{{ url_for('login') }}" method="post">
-    <input type="hidden" name="next" value="{{ next }}">
+<div class="page-center">
+  <div class="glass-card glass-card-compact" style="max-width:420px;width:100%;">
+    <div class="section-heading" style="margin-bottom:4px;">Login</div>
+    <p class="section-sub" style="margin-bottom:16px;">
+      Private access to your owner dashboard.
+    </p>
 
-    <div style="margin-bottom:10px;">
-      <label>Username</label>
-      <input name="username" autocomplete="username">
-    </div>
+    {% if error %}
+      <div class="alert-danger">
+        {{ error }}
+      </div>
+    {% endif %}
 
-    <div style="margin-bottom:10px;">
-      <label>Password</label>
-      <input type="password" name="password" autocomplete="current-password">
-    </div>
+    <form method="post" action="{{ url_for('login') }}" class="form-grid">
+      <input type="hidden" name="next" value="{{ next or url_for('index') }}"/>
 
-    <button type="submit" style="width:100%;">Login</button>
-  </form>
+      <label class="form-field">
+        <span class="form-label">Username</span>
+        <input type="text" name="username" required autocomplete="username"
+               value="{{ request.form.username or '' }}">
+      </label>
 
-  <p style="text-align:center;font-size:12px;color:#9ca3af;margin-top:8px;">
-    Private access for the portfolio owner.
-  </p>
+      <label class="form-field">
+        <span class="form-label">Password</span>
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+
+      <button type="submit" class="btn btn-primary" style="margin-top:8px;width:100%;">
+        Login
+      </button>
+
+      <p class="section-sub" style="text-align:center;margin-top:10px;font-size:12px;">
+        Portfolio is read-only for visitors. Only you can login here.
+      </p>
+    </form>
+  </div>
 </div>
+
 {% endblock %}
