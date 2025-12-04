@@ -8,11 +8,12 @@
     <div>
       <div class="section-heading">Edit Trade</div>
       <p class="section-sub">
-        Update fields, notes, or screenshots for this case study.
+        Update details, execution checklist, or upload updated screenshots.
+        Changes here will sync to both the owner dashboard and public case-study view.
       </p>
     </div>
-    <a href="{{ url_for('trade_detail', trade_id=trade.id) }}" class="btn-outline" style="font-size:12px;">
-      ← Back to detail
+    <a href="{{ url_for('admin_dashboard') }}" class="btn-outline" style="font-size:12px;">
+      ← Back to dashboard
     </a>
   </div>
 </div>
@@ -20,21 +21,22 @@
 <div class="glass-card" style="margin-top:18px;">
   <form method="post" enctype="multipart/form-data" class="form-two-column">
 
+    <!-- LEFT COLUMN -->
     <div class="form-column">
       <div class="form-section-title">Core trade data</div>
 
       <div class="form-row-2">
         <label class="form-field">
           <span class="form-label">Trade Date</span>
-          <input type="date" name="trade_date" value="{{ trade.trade_date }}">
+          <input type="date" name="trade_date" value="{{ trade.trade_date }}" required>
         </label>
 
         <label class="form-field">
           <span class="form-label">Status</span>
-          <select name="status">
-            <option value="PLANNED" {{ 'selected' if trade.status=='PLANNED' }}>Planned</option>
-            <option value="ACTIVE"  {{ 'selected' if trade.status=='ACTIVE'  }}>Active</option>
-            <option value="CLOSED"  {{ 'selected' if trade.status=='CLOSED'  }}>Closed</option>
+          <select name="status" required>
+            <option value="PLANNED" {% if trade.status == 'PLANNED' %}selected{% endif %}>Planned</option>
+            <option value="ACTIVE" {% if trade.status == 'ACTIVE' %}selected{% endif %}>Active</option>
+            <option value="CLOSED" {% if trade.status == 'CLOSED' %}selected{% endif %}>Closed</option>
           </select>
         </label>
       </div>
@@ -42,7 +44,7 @@
       <div class="form-row-2">
         <label class="form-field">
           <span class="form-label">Symbol / Pair</span>
-          <input type="text" name="symbol" value="{{ trade.symbol }}">
+          <input type="text" name="symbol" value="{{ trade.symbol }}" required>
         </label>
 
         <label class="form-field">
@@ -54,42 +56,46 @@
       <div class="form-row-3">
         <label class="form-field">
           <span class="form-label">Direction</span>
-          <select name="direction">
+          <select name="direction" required>
             <option value="">–</option>
-            <option value="BUY"  {{ 'selected' if trade.direction=='BUY'  }}>Buy</option>
-            <option value="SELL" {{ 'selected' if trade.direction=='SELL' }}>Sell</option>
+            <option value="BUY" {% if trade.direction == 'BUY' %}selected{% endif %}>Buy</option>
+            <option value="SELL" {% if trade.direction == 'SELL' %}selected{% endif %}>Sell</option>
           </select>
         </label>
 
         <label class="form-field">
           <span class="form-label">Entry Price</span>
-          <input type="number" step="0.0001" name="entry_price" value="{{ trade.entry_price }}">
+          <input type="number" step="0.0001" name="entry_price"
+                 value="{{ trade.entry_price }}">
         </label>
 
         <label class="form-field">
           <span class="form-label">Stop Loss</span>
-          <input type="number" step="0.0001" name="stop_loss" value="{{ trade.stop_loss }}">
+          <input type="number" step="0.0001" name="stop_loss"
+                 value="{{ trade.stop_loss }}">
         </label>
       </div>
 
       <div class="form-row-3">
         <label class="form-field">
           <span class="form-label">Take Profit</span>
-          <input type="number" step="0.0001" name="take_profit" value="{{ trade.take_profit }}">
+          <input type="number" step="0.0001" name="take_profit"
+                 value="{{ trade.take_profit }}">
         </label>
 
         <label class="form-field">
           <span class="form-label">Risk per Trade (%)</span>
-          <input type="number" step="0.01" name="risk_percent" value="{{ trade.risk_percent }}">
+          <input type="number" step="0.01" name="risk_percent"
+                 value="{{ trade.risk_percent }}">
         </label>
 
         <label class="form-field">
           <span class="form-label">Result</span>
           <select name="result">
-            <option value=""      {{ 'selected' if not trade.result }}>Pending / N/A</option>
-            <option value="WIN"   {{ 'selected' if trade.result=='WIN'  }}>Win</option>
-            <option value="LOSE"  {{ 'selected' if trade.result=='LOSE' }}>Lose</option>
-            <option value="BE"    {{ 'selected' if trade.result=='BE'   }}>Break-Even</option>
+            <option value="" {% if not trade.result %}selected{% endif %}>Pending / N/A</option>
+            <option value="WIN" {% if trade.result == 'WIN' %}selected{% endif %}>Win</option>
+            <option value="LOSE" {% if trade.result == 'LOSE' %}selected{% endif %}>Lose</option>
+            <option value="BE" {% if trade.result == 'BE' %}selected{% endif %}>Break-Even</option>
           </select>
         </label>
       </div>
@@ -98,94 +104,111 @@
         <label class="form-field">
           <span class="form-label">Grade</span>
           <select name="grade">
-            <option value=""  {{ 'selected' if not trade.grade }}>–</option>
-            <option value="A" {{ 'selected' if trade.grade=='A' }}>A</option>
-            <option value="B" {{ 'selected' if trade.grade=='B' }}>B</option>
-            <option value="C" {{ 'selected' if trade.grade=='C' }}>C</option>
-            <option value="D" {{ 'selected' if trade.grade=='D' }}>D</option>
+            <option value="" {% if not trade.grade %}selected{% endif %}>–</option>
+            <option value="A" {% if trade.grade == 'A' %}selected{% endif %}>A</option>
+            <option value="B" {% if trade.grade == 'B' %}selected{% endif %}>B</option>
+            <option value="C" {% if trade.grade == 'C' %}selected{% endif %}>C</option>
+            <option value="D" {% if trade.grade == 'D' %}selected{% endif %}>D</option>
           </select>
         </label>
 
         <label class="form-field">
           <span class="form-label">Strategy / Setup</span>
           <select name="strategy_tag">
-            <option value=""      {{ 'selected' if not trade.strategy_tag }}>–</option>
-            <option value="SND"   {{ 'selected' if trade.strategy_tag=='SND'   }}>SND</option>
-            <option value="MR"    {{ 'selected' if trade.strategy_tag=='MR'    }}>MR</option>
-            <option value="BO"    {{ 'selected' if trade.strategy_tag=='BO'    }}>BO</option>
-            <option value="SWING" {{ 'selected' if trade.strategy_tag=='SWING' }}>SWING</option>
-            <option value="INTRA" {{ 'selected' if trade.strategy_tag=='INTRA' }}>INTRA</option>
+            <option value="" {% if not trade.strategy_tag %}selected{% endif %}>–</option>
+            <option value="SND" {% if trade.strategy_tag == 'SND' %}selected{% endif %}>SND</option>
+            <option value="MR" {% if trade.strategy_tag == 'MR' %}selected{% endif %}>MR</option>
+            <option value="BO" {% if trade.strategy_tag == 'BO' %}selected{% endif %}>BO</option>
+            <option value="SWING" {% if trade.strategy_tag == 'SWING' %}selected{% endif %}>SWING</option>
+            <option value="INTRA" {% if trade.strategy_tag == 'INTRA' %}selected{% endif %}>INTRA</option>
           </select>
         </label>
 
         <label class="form-field">
           <span class="form-label">Market Condition</span>
-          <input type="text" name="market_condition" value="{{ trade.market_condition }}">
+          <input type="text" name="market_condition"
+                 value="{{ trade.market_condition }}">
         </label>
       </div>
 
       <div class="form-section-title" style="margin-top:18px;">Execution checklist</div>
       <div class="checklist-grid">
         <label class="check-item">
-          <input type="checkbox" name="followed_plan" {{ 'checked' if trade.followed_plan }}>
+          <input type="checkbox" name="followed_plan"
+                 {% if trade.followed_plan %}checked{% endif %}>
           <span>Followed plan</span>
         </label>
         <label class="check-item">
-          <input type="checkbox" name="no_revenge" {{ 'checked' if trade.no_revenge }}>
+          <input type="checkbox" name="no_revenge"
+                 {% if trade.no_revenge %}checked{% endif %}>
           <span>No revenge trade</span>
         </label>
         <label class="check-item">
-          <input type="checkbox" name="no_fomo" {{ 'checked' if trade.no_fomo }}>
+          <input type="checkbox" name="no_fomo"
+                 {% if trade.no_fomo %}checked{% endif %}>
           <span>No FOMO entry</span>
         </label>
         <label class="check-item">
-          <input type="checkbox" name="respected_rr" {{ 'checked' if trade.respected_rr }}>
+          <input type="checkbox" name="respected_rr"
+                 {% if trade.respected_rr %}checked{% endif %}>
           <span>Min R:R respected</span>
         </label>
       </div>
 
       <label class="check-item" style="margin-top:8px;">
-        <input type="checkbox" name="featured" {{ 'checked' if trade.featured }}>
+        <input type="checkbox" name="featured"
+               {% if trade.featured %}checked{% endif %}>
         <span>Mark as featured case study</span>
       </label>
     </div>
 
+    <!-- RIGHT COLUMN -->
     <div class="form-column">
       <div class="form-section-title">Narrative & files</div>
 
       <label class="form-field">
         <span class="form-label">Public summary (for HR)</span>
-        <textarea name="notes_public" rows="6">{{ trade.notes_public }}</textarea>
+        <textarea name="notes_public" rows="6"
+                  placeholder="Thesis, execution, outcome, and key takeaways in a professional tone.">{{ trade.notes_public }}</textarea>
       </label>
 
       <label class="form-field">
         <span class="form-label">Private notes (only you)</span>
-        <textarea name="notes_private" rows="6">{{ trade.notes_private }}</textarea>
+        <textarea name="notes_private" rows="6"
+                  placeholder="Emotions, micro mistakes, alternative scenarios, deeper review.">{{ trade.notes_private }}</textarea>
       </label>
 
       <div class="form-section-title" style="margin-top:12px;">Screenshots</div>
 
-      {% if trade.screenshot_before_filename %}
-        <p class="section-sub" style="font-size:12px;margin-bottom:6px;">
-          Current BEFORE: {{ trade.screenshot_before_filename }}
-        </p>
-      {% endif %}
       <label class="form-field">
-        <span class="form-label">Replace BEFORE screenshot (optional)</span>
+        <span class="form-label">Screenshot BEFORE</span>
+        {% if trade.screenshot_before %}
+          <div style="margin-bottom:6px;font-size:11px;color:var(--text-muted);">
+            Current file:
+            <a href="{{ url_for('uploaded_file', filename=trade.screenshot_before.split('/')[-1]) }}"
+               target="_blank" style="color:#bae6fd;text-decoration:none;">
+              open
+            </a>
+          </div>
+        {% endif %}
         <input type="file" name="screenshot_before" accept="image/*">
       </label>
 
-      {% if trade.screenshot_after_filename %}
-        <p class="section-sub" style="font-size:12px;margin-bottom:6px;">
-          Current AFTER: {{ trade.screenshot_after_filename }}
-        </p>
-      {% endif %}
       <label class="form-field">
-        <span class="form-label">Replace AFTER screenshot (optional)</span>
+        <span class="form-label">Screenshot AFTER</span>
+        {% if trade.screenshot_after %}
+          <div style="margin-bottom:6px;font-size:11px;color:var(--text-muted);">
+            Current file:
+            <a href="{{ url_for('uploaded_file', filename=trade.screenshot_after.split('/')[-1]) }}"
+               target="_blank" style="color:#bae6fd;text-decoration:none;">
+              open
+            </a>
+          </div>
+        {% endif %}
         <input type="file" name="screenshot_after" accept="image/*">
       </label>
 
-      <button type="submit" class="btn btn-primary" style="margin-top:18px;width:100%;">
+      <button type="submit" class="btn-primary" style="margin-top:18px;width:100%;">
         Save changes
       </button>
     </div>
