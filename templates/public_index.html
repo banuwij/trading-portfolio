@@ -3,6 +3,58 @@
 
 {% block content %}
 
+<!-- ===== TradingView Ticker Tape ===== -->
+<div class="glass-card" style="padding:10px 14px;margin-bottom:18px;">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <div class="tradingview-widget-copyright" style="font-size:10px;text-align:right;">
+      <a href="https://www.tradingview.com/markets/" rel="noopener nofollow" target="_blank">
+        <span class="blue-text">Ticker tape</span>
+      </a><span class="trademark"> by TradingView</span>
+    </div>
+    <script type="text/javascript"
+            src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"
+            async>
+    {
+      "symbols": [
+        {
+          "proName": "FX_IDC:EURUSD",
+          "title": "EURUSD"
+        },
+        {
+          "proName": "BITSTAMP:BTCUSD",
+          "title": "Bitcoin"
+        },
+        {
+          "proName": "BITSTAMP:ETHUSD",
+          "title": "Ethereum"
+        },
+        {
+          "proName": "OANDA:XAUUSD",
+          "title": "GOLD"
+        },
+        {
+          "proName": "IDX:COMPOSITE",
+          "title": "Indonesian Index"
+        },
+        {
+          "proName": "IDX:BBCA",
+          "title": "BBCA"
+        }
+      ],
+      "colorTheme": "dark",
+      "locale": "en",
+      "largeChartUrl": "",
+      "isTransparent": false,
+      "showSymbolLogo": true,
+      "displayMode": "adaptive"
+    }
+    </script>
+  </div>
+</div>
+<!-- ===== End TradingView Ticker Tape ===== -->
+
+<!-- HERO / SNAPSHOT -->
 <div class="glass-card">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
     <div>
@@ -11,9 +63,6 @@
         This portfolio showcases how I approach markets: structured setups, disciplined risk, and post-trade reviews.
         Designed for hiring managers who want to see real decision-making, not only performance screenshots.
       </p>
-      <button class="btn-primary" onclick="window.open('https://www.linkedin.com/in/banuwijaya','_blank')">
-        Hire me on LinkedIn ↗
-      </button>
     </div>
 
     <div style="min-width:220px;">
@@ -37,88 +86,11 @@
   </div>
 </div>
 
+<!-- ALL TRADES TABLE -->
 <div class="glass-card" style="margin-top:20px;">
-  <div class="section-heading" style="font-size:16px;">Planned setups</div>
-  <p class="section-sub">Trades in preparation phase. Thesis and risk defined, execution not started.</p>
-
-  <table>
-    <thead>
-    <tr>
-      <th>Date</th>
-      <th>Symbol</th>
-      <th>TF</th>
-      <th>Dir</th>
-      <th>R:R</th>
-      <th>Grade</th>
-      <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    {% if planned %}
-      {% for t in planned %}
-      <tr>
-        <td>{{ t.trade_date }}</td>
-        <td>{{ t.symbol }}</td>
-        <td>{{ t.timeframe }}</td>
-        <td>{{ t.direction }}</td>
-        <td>{{ t.rr_ratio if t.rr_ratio is not none else "-" }}</td>
-        <td>{{ t.grade or "-" }}</td>
-        <td>
-          <a href="{{ url_for('trade_detail', trade_id=t.id) }}" class="link-pill-outline" style="padding:3px 10px;font-size:10px;">
-            View case
-          </a>
-        </td>
-      </tr>
-      {% endfor %}
-    {% else %}
-      <tr><td colspan="7" style="text-align:center;padding:14px 0;color:var(--text-muted);">No planned setups at the moment.</td></tr>
-    {% endif %}
-    </tbody>
-  </table>
-</div>
-
-<div class="glass-card" style="margin-top:16px;">
-  <div class="section-heading" style="font-size:16px;">Active trades</div>
-  <p class="section-sub">Positions currently managed in the market.</p>
-
-  <table>
-    <thead>
-    <tr>
-      <th>Date</th>
-      <th>Symbol</th>
-      <th>TF</th>
-      <th>Dir</th>
-      <th>Status</th>
-      <th></th>
-    </tr>
-    </thead>
-    <tbody>
-    {% if active %}
-      {% for t in active %}
-      <tr>
-        <td>{{ t.trade_date }}</td>
-        <td>{{ t.symbol }}</td>
-        <td>{{ t.timeframe }}</td>
-        <td>{{ t.direction }}</td>
-        <td><span class="badge badge-pending">Active</span></td>
-        <td>
-          <a href="{{ url_for('trade_detail', trade_id=t.id) }}" class="link-pill-outline" style="padding:3px 10px;font-size:10px;">
-            View case
-          </a>
-        </td>
-      </tr>
-      {% endfor %}
-    {% else %}
-      <tr><td colspan="6" style="text-align:center;padding:14px 0;color:var(--text-muted);">No active trades.</td></tr>
-    {% endif %}
-    </tbody>
-  </table>
-</div>
-
-<div class="glass-card" style="margin-top:16px;">
-  <div class="section-heading" style="font-size:16px;">Closed trades (case studies)</div>
+  <div class="section-heading" style="font-size:16px;">All trades</div>
   <p class="section-sub">
-    Each row links to a full case study with before/after screenshots and a brief review.
+    Planned, active, and closed case studies in a single view.
   </p>
 
   <table>
@@ -128,6 +100,10 @@
       <th>Symbol</th>
       <th>TF</th>
       <th>Dir</th>
+      <th>Entry</th>
+      <th>SL</th>
+      <th>TP</th>
+      <th>Status</th>
       <th>Result</th>
       <th>R</th>
       <th>Grade</th>
@@ -135,13 +111,36 @@
     </tr>
     </thead>
     <tbody>
-    {% if closed %}
-      {% for t in closed %}
+    {% set all_trades = planned + active + closed %}
+    {% if all_trades %}
+      {% for t in all_trades %}
       <tr>
         <td>{{ t.trade_date }}</td>
         <td>{{ t.symbol }}</td>
-        <td>{{ t.timeframe }}</td>
-        <td>{{ t.direction }}</td>
+        <td>{{ t.timeframe or "-" }}</td>
+        <td>
+          {% if t.direction == "BUY" %}
+            <span class="badge badge-dir-buy">Buy</span>
+          {% elif t.direction == "SELL" %}
+            <span class="badge badge-dir-sell">Sell</span>
+          {% else %}
+            <span class="badge">{{ t.direction or "-" }}</span>
+          {% endif %}
+        </td>
+        <td>{{ t.entry_price|price }}</td>
+        <td>{{ t.stop_loss|price }}</td>
+        <td>{{ t.take_profit|price }}</td>
+        <td>
+          {% if t.status == "PLANNED" %}
+            <span class="badge badge-status-planned">Planned</span>
+          {% elif t.status == "ACTIVE" %}
+            <span class="badge badge-status-active">Active</span>
+          {% elif t.status == "CLOSED" %}
+            <span class="badge badge-status-closed">Closed</span>
+          {% else %}
+            <span class="badge">{{ t.status or "-" }}</span>
+          {% endif %}
+        </td>
         <td>
           {% if t.result == "WIN" %}
             <span class="badge badge-win">Win</span>
@@ -156,17 +155,122 @@
         <td>{{ t.result_r if t.result_r is not none else "-" }}</td>
         <td>{{ t.grade or "-" }}</td>
         <td>
-          <a href="{{ url_for('trade_detail', trade_id=t.id) }}" class="link-pill-outline" style="padding:3px 10px;font-size:10px;">
+          <a href="{{ url_for('trade_detail', trade_id=t.id) }}"
+             class="link-pill-outline"
+             style="padding:3px 10px;font-size:10px;">
             View case
           </a>
         </td>
       </tr>
       {% endfor %}
     {% else %}
-      <tr><td colspan="8" style="text-align:center;padding:14px 0;color:var(--text-muted);">No closed trades yet.</td></tr>
+      <tr>
+        <td colspan="12" style="text-align:center;padding:14px 0;color:var(--text-muted);">
+          No trades logged yet.
+        </td>
+      </tr>
     {% endif %}
     </tbody>
   </table>
 </div>
+
+<!-- ===== Market Overview + Economic Calendar Side by Side ===== -->
+<div style="
+  display:flex;
+  gap:18px;
+  margin-top:20px;
+  flex-wrap:wrap;
+">
+
+  <!-- Market Overview -->
+  <div class="glass-card" style="flex:1;min-width:350px;">
+    <div class="section-heading" style="font-size:14px;">📈 Market Overview</div>
+    <div style="margin-top:10px;">
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <div class="tradingview-widget-copyright" style="font-size:10px;text-align:right;">
+          <a href="https://www.tradingview.com/markets/" target="_blank" rel="noopener nofollow">
+            <span class="blue-text">World markets</span>
+          </a> by TradingView
+        </div>
+        <script type="text/javascript"
+                src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+        {
+          "colorTheme": "dark",
+          "dateRange": "12M",
+          "locale": "en",
+          "largeChartUrl": "",
+          "isTransparent": true,
+          "showFloatingTooltip": false,
+          "gridLineColor": "rgba(240, 243, 250, 0)",
+          "scaleFontColor": "#DBDBDB",
+          "belowLineFillColorGrowing": "rgba(41, 98, 255, 0.12)",
+          "belowLineFillColorFalling": "rgba(41, 98, 255, 0.12)",
+          "symbolActiveColor": "rgba(41, 98, 255, 0.12)",
+          "tabs": [
+            {
+              "title": "Indices",
+              "symbols": [
+                {"s": "FOREXCOM:SPXUSD", "d": "S&P 500"},
+                {"s": "FOREXCOM:NSXUSD", "d": "NASDAQ 100"},
+                {"s": "FOREXCOM:DJI", "d": "Dow Jones"},
+                {"s": "INDEX:NKY", "d": "Japan 225"},
+                {"s": "INDEX:DEU40", "d": "DAX"},
+                {"s": "FOREXCOM:UKXGBP", "d": "FTSE 100"}
+              ]
+            },
+            {
+              "title": "Forex",
+              "symbols": [
+                {"s": "FX:EURUSD", "d": "EUR/USD"},
+                {"s": "FX:GBPUSD", "d": "GBP/USD"},
+                {"s": "FX:USDJPY", "d": "USD/JPY"},
+                {"s": "FX:USDCHF", "d": "USD/CHF"}
+              ]
+            }
+          ],
+          "width": "100%",
+          "height": "480",
+          "showSymbolLogo": true,
+          "showChart": true,
+          "backgroundColor": "#0f0f0f"
+        }
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Economic Calendar -->
+  <div class="glass-card" style="flex:1;min-width:350px;">
+    <div class="section-heading" style="font-size:14px;">📰 Economic Calendar</div>
+
+    <div style="margin-top:10px;height:480px;overflow:hidden;">
+      <div class="tradingview-widget-container" style="height:100%;">
+        <div class="tradingview-widget-container__widget" style="height:100%;"></div>
+        <div class="tradingview-widget-copyright" style="font-size:10px;text-align:right;">
+          <a href="https://www.tradingview.com/economic-calendar/"
+             rel="noopener nofollow" target="_blank">
+            <span class="blue-text">Economic Calendar</span>
+          </a> by TradingView
+        </div>
+        <script type="text/javascript"
+                src="https://s3.tradingview.com/external-embedding/embed-widget-events.js"
+                async>
+        {
+          "colorTheme": "dark",
+          "isTransparent": true,
+          "locale": "en",
+          "importanceFilter": "-1,0,1",
+          "countryFilter": "us,gb,eu,jp,cn,id",
+          "width": "100%",
+          "height": "100%"
+        }
+        </script>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- ===== End Section ===== -->
 
 {% endblock %}
