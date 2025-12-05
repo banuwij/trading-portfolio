@@ -16,8 +16,7 @@ The interface separates:
 
 ## 🚀 Live Deployment
 Available online (production):  
-👉 https://banu-trading-portfolio.onrender.com *(example — update with your live URL)*
-
+👉 https://banu-trading-portfolio-production.up.railway.app
 ---
 
 ## 💡 Core Features
