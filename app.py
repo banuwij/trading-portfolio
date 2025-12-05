@@ -88,6 +88,34 @@ def init_db():
 init_db()
 
 # -----------------------------------------------------------------------------
+# formatting helpers (tampilan angka entry/sl/tp)
+# -----------------------------------------------------------------------------
+def format_price(value):
+    """
+    Format angka harga menjadi gaya Indonesia:
+    91000      -> 91.000,00
+    91000.5    -> 91.000,50
+    None / ""  -> "-"
+    """
+    if value is None or value == "":
+        return "-"
+
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        # kalau bukan angka, tampilkan apa adanya
+        return value
+
+    # 91,000.00 -> 91.000,00
+    s = f"{num:,.2f}"
+    s = s.replace(",", "X").replace(".", ",").replace("X", ".")
+    return s
+
+
+# daftarkan filter ke Jinja
+app.jinja_env.filters["price"] = format_price
+
+# -----------------------------------------------------------------------------
 # helpers
 # -----------------------------------------------------------------------------
 
@@ -212,7 +240,8 @@ def public_root():
     conn = get_db()
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM trades ORDER BY trade_date DESC, id DESC")
+    # urut naik supaya equity curve chart kronologis
+    cur.execute("SELECT * FROM trades ORDER BY trade_date ASC, id ASC")
     trades = cur.fetchall()
     conn.close()
 
@@ -235,6 +264,17 @@ def public_root():
     ]
     disc_avg = round(sum(discipline_scores) / len(discipline_scores), 1) if discipline_scores else 0.0
 
+    # data untuk line chart cumulative R
+    chart_labels = []
+    chart_values = []
+    cumulative_r = 0.0
+
+    for t in closed_for_stats:
+        chart_labels.append(t["trade_date"])
+        if t["result_r"] is not None:
+            cumulative_r += t["result_r"]
+        chart_values.append(round(cumulative_r, 2))
+
     return render_template(
         "public_index.html",
         is_public=True,
@@ -246,6 +286,8 @@ def public_root():
         win_rate=win_rate,
         avg_r=avg_r,
         discipline_score=disc_avg,
+        chart_labels=chart_labels,
+        chart_values=chart_values,
     )
 
 
