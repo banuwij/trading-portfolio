@@ -8,8 +8,8 @@
     <div>
       <div class="section-heading">New Trade</div>
       <p class="section-sub">
-        Log a new trade with your pre-trade thesis, risk, and screenshots. This
-        entry will appear in both the owner dashboard and public case-study view.
+        Log a new trade with your pre-trade thesis, risk, and screenshots. This entry will appear
+        in both the owner dashboard and public case-study view.
       </p>
     </div>
     <a href="{{ url_for('admin_dashboard') }}" class="btn-outline" style="font-size:12px;">
@@ -19,168 +19,247 @@
 </div>
 
 <div class="glass-card" style="margin-top:18px;">
-  <form method="post" enctype="multipart/form-data" class="form-two-column">
+  <form method="post" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:22px;">
 
-    <!-- LEFT COLUMN -->
-    <div class="form-column">
+    <!-- Core trade data -->
+    <div>
       <div class="form-section-title">Core trade data</div>
 
-      <div class="form-row-2">
-        <label class="form-field">
-          <span class="form-label">Trade Date</span>
-          <input type="date" name="trade_date" value="{{ today }}" required>
-        </label>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:10px;">
 
-        <label class="form-field">
-          <span class="form-label">Status</span>
-          <select name="status" required>
-            <option value="PLANNED">Planned</option>
+        <div>
+          <label class="form-label" for="trade_date">Trade Date</label>
+          <input
+            id="trade_date"
+            name="trade_date"
+            type="date"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            value="{{ today }}"
+          >
+        </div>
+
+        <div>
+          <label class="form-label" for="status">Status</label>
+          <select id="status" name="status" class="input-field" style="width:100%;margin-top:6px;">
+            <option value="PLANNED" selected>Planned</option>
             <option value="ACTIVE">Active</option>
             <option value="CLOSED">Closed</option>
           </select>
-        </label>
-      </div>
+        </div>
 
-      <div class="form-row-2">
-        <label class="form-field">
-          <span class="form-label">Symbol / Pair</span>
-          <input type="text" name="symbol" placeholder="e.g. BTCUSDT, ANTM" required>
-        </label>
+        <div>
+          <label class="form-label" for="symbol">Symbol / Pair</label>
+          <input
+            id="symbol"
+            name="symbol"
+            type="text"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. BTCUSDT, ANTM"
+          >
+        </div>
 
-        <label class="form-field">
-          <span class="form-label">Timeframe</span>
-          <input type="text" name="timeframe" placeholder="e.g. H1, H4, D1">
-        </label>
-      </div>
+        <div>
+          <label class="form-label" for="timeframe">Timeframe</label>
+          <input
+            id="timeframe"
+            name="timeframe"
+            type="text"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. H1, H4, D1"
+          >
+        </div>
 
-      <div class="form-row-3">
-        <label class="form-field">
-          <span class="form-label">Direction</span>
-          <select name="direction" required>
-            <option value="">–</option>
+        <div>
+          <label class="form-label" for="direction">Direction</label>
+          <select id="direction" name="direction" class="input-field" style="width:100%;margin-top:6px;">
+            <option value="">-</option>
             <option value="BUY">Buy</option>
             <option value="SELL">Sell</option>
           </select>
-        </label>
+        </div>
 
-        <label class="form-field">
-          <span class="form-label">Entry Price</span>
-          <input type="number" step="0.0001" name="entry_price" placeholder="Entry">
-        </label>
+        <div>
+          <label class="form-label" for="entry_price">Entry Price</label>
+          <input
+            id="entry_price"
+            name="entry_price"
+            type="number"
+            step="0.01"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. 91000.00"
+          >
+        </div>
 
-        <label class="form-field">
-          <span class="form-label">Stop Loss</span>
-          <input type="number" step="0.0001" name="stop_loss" placeholder="SL">
-        </label>
-      </div>
+        <div>
+          <label class="form-label" for="stop_loss">Stop Loss</label>
+          <input
+            id="stop_loss"
+            name="stop_loss"
+            type="number"
+            step="0.01"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. 89000.00"
+          >
+        </div>
 
-      <div class="form-row-3">
-        <label class="form-field">
-          <span class="form-label">Take Profit</span>
-          <input type="number" step="0.0001" name="take_profit" placeholder="TP">
-        </label>
+        <div>
+          <label class="form-label" for="take_profit">Take Profit</label>
+          <input
+            id="take_profit"
+            name="take_profit"
+            type="number"
+            step="0.01"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. 110000.00"
+          >
+        </div>
 
-        <label class="form-field">
-          <span class="form-label">Risk per Trade (%)</span>
-          <input type="number" step="0.01" name="risk_percent" placeholder="e.g. 0.5, 1, 2">
-        </label>
+        <div>
+          <label class="form-label" for="risk_percent">Risk per Trade (%)</label>
+          <input
+            id="risk_percent"
+            name="risk_percent"
+            type="number"
+            step="0.1"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. 0.5, 1, 2"
+          >
+        </div>
 
-        <label class="form-field">
-          <span class="form-label">Result</span>
-          <select name="result">
-            <option value="">Pending / N/A</option>
+        <div>
+          <label class="form-label" for="result">Result</label>
+          <select id="result" name="result" class="input-field" style="width:100%;margin-top:6px;">
+            <option value="" selected>Pending / N/A</option>
             <option value="WIN">Win</option>
             <option value="LOSE">Lose</option>
-            <option value="BE">Break-Even</option>
+            <option value="BE">Break-even</option>
           </select>
-        </label>
+        </div>
+
+        <div>
+          <label class="form-label" for="grade">Grade</label>
+          <input
+            id="grade"
+            name="grade"
+            type="text"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. A, B, C"
+          >
+        </div>
+
+        <div>
+          <label class="form-label" for="strategy_tag">Strategy / Setup</label>
+          <input
+            id="strategy_tag"
+            name="strategy_tag"
+            type="text"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. SND, Trend, Breakout"
+          >
+        </div>
+
+        <div>
+          <label class="form-label" for="market_condition">Market Condition</label>
+          <input
+            id="market_condition"
+            name="market_condition"
+            type="text"
+            class="input-field"
+            style="width:100%;margin-top:6px;"
+            placeholder="e.g. Trend, Range, News"
+          >
+        </div>
+
+        <div style="grid-column:1 / -1;margin-top:4px;">
+          <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+            <input
+              type="checkbox"
+              name="featured"
+              value="1"
+              style="width:14px;height:14px;"
+            >
+            <span>Mark as featured case study</span>
+          </label>
+        </div>
+
       </div>
-
-      <div class="form-row-3">
-        <label class="form-field">
-          <span class="form-label">Grade</span>
-          <select name="grade">
-            <option value="">–</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-            <option value="C">C</option>
-            <option value="D">D</option>
-          </select>
-        </label>
-
-        <label class="form-field">
-          <span class="form-label">Strategy / Setup</span>
-          <select name="strategy_tag">
-            <option value="">–</option>
-            <option value="SND">SND</option>
-            <option value="MR">MR</option>
-            <option value="BO">BO</option>
-            <option value="SWING">SWING</option>
-            <option value="INTRA">INTRA</option>
-          </select>
-        </label>
-
-        <label class="form-field">
-          <span class="form-label">Market Condition</span>
-          <input type="text" name="market_condition" placeholder="e.g. Trend, Range, News">
-        </label>
-      </div>
-
-      <div class="form-section-title" style="margin-top:18px;">Execution checklist</div>
-      <div class="checklist-grid">
-        <label class="check-item">
-          <input type="checkbox" name="followed_plan">
-          <span>Followed plan</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" name="no_revenge">
-          <span>No revenge trade</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" name="no_fomo">
-          <span>No FOMO entry</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" name="respected_rr">
-          <span>Min R:R respected</span>
-        </label>
-      </div>
-
-      <label class="check-item" style="margin-top:8px;">
-        <input type="checkbox" name="featured">
-        <span>Mark as featured case study</span>
-      </label>
     </div>
 
-    <!-- RIGHT COLUMN -->
-    <div class="form-column">
-      <div class="form-section-title">Narrative & files</div>
+    <!-- Narrative & files -->
+    <div>
+      <div class="form-section-title">Narrative &amp; files</div>
 
-      <label class="form-field">
-        <span class="form-label">Public summary (for HR)</span>
-        <textarea name="notes_public" rows="6"
-                  placeholder="Thesis, execution, outcome, and key takeaways in a professional tone."></textarea>
-      </label>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:10px;">
+        <div>
+          <label class="form-label" for="notes_public">Public summary (for HR)</label>
+          <textarea
+            id="notes_public"
+            name="notes_public"
+            rows="5"
+            class="input-field"
+            style="width:100%;margin-top:6px;resize:vertical;"
+            placeholder="Thesis, execution, outcome, and key takeaways in a professional tone."
+          ></textarea>
+        </div>
 
-      <label class="form-field">
-        <span class="form-label">Private notes (only you)</span>
-        <textarea name="notes_private" rows="6"
-                  placeholder="Emotions, micro mistakes, alternative scenarios, deeper review."></textarea>
-      </label>
+        <div>
+          <label class="form-label" for="notes_private">Private notes (only you)</label>
+          <textarea
+            id="notes_private"
+            name="notes_private"
+            rows="5"
+            class="input-field"
+            style="width:100%;margin-top:6px;resize:vertical;"
+            placeholder="Emotions, micro mistakes, alternative scenarios, deeper review."
+          ></textarea>
+        </div>
+      </div>
+    </div>
 
-      <div class="form-section-title" style="margin-top:12px;">Screenshots</div>
+    <!-- Screenshots -->
+    <div>
+      <div class="form-section-title">Screenshots</div>
 
-      <label class="form-field">
-        <span class="form-label">Screenshot BEFORE (required for case study)</span>
-        <input type="file" name="screenshot_before" accept="image/*">
-      </label>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:10px;">
 
-      <label class="form-field">
-        <span class="form-label">Screenshot AFTER (optional, for outcome)</span>
-        <input type="file" name="screenshot_after" accept="image/*">
-      </label>
+        <div>
+          <label class="form-label" for="screenshot_before">Screenshot BEFORE (required for case study)</label>
+          <input
+            id="screenshot_before"
+            name="screenshot_before"
+            type="file"
+            accept="image/*"
+            class="input-field"
+            style="width:100%;margin-top:6px;padding:7px 10px;"
+          >
+        </div>
 
-      <button type="submit" class="btn-primary" style="margin-top:18px;width:100%;">
+        <div>
+          <label class="form-label" for="screenshot_after">Screenshot AFTER (optional, for outcome)</label>
+          <input
+            id="screenshot_after"
+            name="screenshot_after"
+            type="file"
+            accept="image/*"
+            class="input-field"
+            style="width:100%;margin-top:6px;padding:7px 10px;"
+          >
+        </div>
+
+      </div>
+    </div>
+
+    <div style="margin-top:4px;">
+      <button type="submit" class="btn-primary" style="width:100%;">
         Save trade
       </button>
     </div>
