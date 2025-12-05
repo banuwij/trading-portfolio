@@ -3,34 +3,73 @@
 
 {% block content %}
 
-<div class="glass-card" style="max-width:520px;margin:0 auto;">
-  <div style="text-align:center;margin-bottom:16px;">
-    <div class="section-heading">Login</div>
-    <p class="section-sub" style="margin-top:4px;">
-      Private access for the portfolio owner.
+<div style="display:flex;justify-content:center;margin-top:80px;margin-bottom:40px;">
+  <div class="glass-card" style="max-width:420px;width:100%;padding:32px 32px 28px;">
+
+    <div style="margin-bottom:18px;">
+      <div class="section-heading" style="font-size:20px;">Owner login</div>
+      <p class="section-sub" style="margin-top:6px;line-height:1.6;">
+        Private access for the portfolio owner. Hiring managers only see the
+        <span style="font-weight:500;">public case-study view</span>.
+      </p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="margin-bottom:14px;">
+          {% for category, message in messages %}
+            <div style="
+                font-size:13px;
+                padding:8px 10px;
+                border-radius:999px;
+                border:1px solid rgba(248,113,113,0.5);
+                background:rgba(248,113,113,0.08);
+                color:#fecaca;
+              ">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" style="display:flex;flex-direction:column;gap:14px;">
+
+      <div>
+        <label class="form-label" for="username">Username</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          autocomplete="username"
+          class="input-field"
+          style="width:100%;margin-top:6px;"
+          required
+        >
+      </div>
+
+      <div>
+        <label class="form-label" for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          class="input-field"
+          style="width:100%;margin-top:6px;"
+          required
+        >
+      </div>
+
+      <button type="submit" class="btn-primary" style="width:100%;margin-top:8px;">
+        Login
+      </button>
+    </form>
+
+    <p class="section-sub" style="margin-top:14px;font-size:11px;text-align:center;">
+      Designed as a real trading journal to showcase decision-making, not just P&amp;L.
     </p>
   </div>
-
-  <form method="post" style="display:flex;flex-direction:column;gap:14px;">
-
-    <label class="form-field">
-      <span class="form-label">Username</span>
-      <input type="text" name="username" required autocomplete="username">
-    </label>
-
-    <label class="form-field">
-      <span class="form-label">Password</span>
-      <input type="password" name="password" required autocomplete="current-password">
-    </label>
-
-    <button type="submit" class="btn-primary" style="margin-top:6px;width:100%;">
-      Login
-    </button>
-
-    <p class="section-sub" style="margin-top:10px;text-align:center;">
-      This page is not visible to hiring managers — they only see the public case-study view.
-    </p>
-  </form>
 </div>
 
 {% endblock %}
