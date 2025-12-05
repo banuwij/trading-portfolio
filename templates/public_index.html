@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<!-- ===== TradingView Ticker Tape ===== -->
+<!-- ===== TradingView Ticker T ape ===== -->
 <div class="glass-card" style="padding:10px 14px;margin-bottom:18px;">
   <div class="tradingview-widget-container">
     <div class="tradingview-widget-container__widget"></div>
@@ -63,6 +63,29 @@
         This portfolio showcases how I approach markets: structured setups, disciplined risk, and post-trade reviews.
         Designed for hiring managers who want to see real decision-making, not only performance screenshots.
       </p>
+
+      {# Subtitle dinamis + link ke LinkedIn #}
+      {% if is_admin %}
+      <p style="margin-top:10px;font-size:13px;font-weight:500;color:#a5b4fc;">
+        Curated by
+        <a href="https://www.linkedin.com/in/banuwijaya" target="_blank"
+           style="color:#ffffff;text-decoration:none;font-weight:600;">
+          Banu Surya Ganea Wijaya ↗
+        </a>
+        —
+        <span style="color:#8da2fb;">Owner mode · full journal & editing access</span>
+      </p>
+      {% else %}
+      <p style="margin-top:10px;font-size:13px;font-weight:500;color:#a5b4fc;">
+        Curated by
+        <a href="https://www.linkedin.com/in/banuwijaya" target="_blank"
+           style="color:#ffffff;text-decoration:none;font-weight:600;">
+          Banu Surya Ganea Wijaya ↗
+        </a>
+        —
+        <span style="color:#8da2fb;">Future Portfolio Manager</span>
+      </p>
+      {% endif %}
     </div>
 
     <div style="min-width:220px;">
