@@ -26,17 +26,22 @@
 </div>
 
 <div class="glass-card" style="margin-top:18px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;">
+
   <!-- LEFT: SUMMARY & METRICS -->
-  <div style="display:flex;flex-direction:column;gap:16px;">
+  <div style="display:flex;flex-direction:column;gap:20px;">
+
+    <!-- Summary -->
     <div>
       <div class="form-section-title">Summary</div>
-      <p class="section-sub" style="margin-top:6px;line-height:1.5;">
+      <p class="section-sub" style="margin-top:6px;line-height:1.6;">
         {{ trade.notes_public or "No public summary provided yet." }}
       </p>
     </div>
 
+    <!-- Core metrics -->
     <div>
       <div class="form-section-title">Core metrics</div>
+
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:10px;font-size:12px;">
         <div>
           <div class="section-sub">Result</div>
@@ -73,7 +78,7 @@
         </div>
         <div>
           <div class="section-sub">Entry / SL / TP</div>
-          <div style="margin-top:4px;">
+          <div style="margin-top:4px;white-space:nowrap;">
             {{ trade.entry_price or "-" }} /
             {{ trade.stop_loss or "-" }} /
             {{ trade.take_profit or "-" }}
@@ -88,32 +93,11 @@
       </div>
     </div>
 
-    <div>
-      <div class="form-section-title">Execution checklist</div>
-      <div class="checklist-grid" style="margin-top:8px;">
-        <div class="check-item">
-          <span>Followed plan</span>
-          <span style="margin-left:auto;">{{ "Yes" if trade.followed_plan else "No" }}</span>
-        </div>
-        <div class="check-item">
-          <span>No revenge trade</span>
-          <span style="margin-left:auto;">{{ "Yes" if trade.no_revenge else "No" }}</span>
-        </div>
-        <div class="check-item">
-          <span>No FOMO entry</span>
-          <span style="margin-left:auto;">{{ "Yes" if trade.no_fomo else "No" }}</span>
-        </div>
-        <div class="check-item">
-          <span>Min R:R respected</span>
-          <span style="margin-left:auto;">{{ "Yes" if trade.respected_rr else "No" }}</span>
-        </div>
-      </div>
-    </div>
-
+    <!-- Private notes (owner only) -->
     {% if is_admin %}
     <div>
       <div class="form-section-title">Private notes (owner only)</div>
-      <p class="section-sub" style="margin-top:6px;line-height:1.5;">
+      <p class="section-sub" style="margin-top:6px;line-height:1.6;">
         {{ trade.notes_private or "No private notes written yet." }}
       </p>
     </div>
@@ -121,14 +105,16 @@
   </div>
 
   <!-- RIGHT: SCREENSHOTS -->
-  <div style="display:flex;flex-direction:column;gap:16px;">
+  <div style="display:flex;flex-direction:column;gap:18px;">
+
     <div>
       <div class="form-section-title">Screenshot BEFORE</div>
       {% if trade.screenshot_before %}
         <div style="margin-top:10px;border-radius:18px;overflow:hidden;border:1px solid rgba(148,163,184,0.35);background:#020617;">
-          <img src="{{ url_for('uploaded_file', filename=trade.screenshot_before.split('/')[-1]) }}"
-               alt="Before screenshot"
-               style="display:block;width:100%;height:auto;">
+          <img
+            src="{{ url_for('uploaded_file', filename=trade.screenshot_before.split('/')[-1]) }}"
+            alt="Before screenshot"
+            style="display:block;width:100%;height:auto;">
         </div>
       {% else %}
         <p class="section-sub" style="margin-top:8px;">No screenshot uploaded.</p>
@@ -139,14 +125,16 @@
       <div class="form-section-title">Screenshot AFTER</div>
       {% if trade.screenshot_after %}
         <div style="margin-top:10px;border-radius:18px;overflow:hidden;border:1px solid rgba(148,163,184,0.35);background:#020617;">
-          <img src="{{ url_for('uploaded_file', filename=trade.screenshot_after.split('/')[-1]) }}"
-               alt="After screenshot"
-               style="display:block;width:100%;height:auto;">
+          <img
+            src="{{ url_for('uploaded_file', filename=trade.screenshot_after.split('/')[-1]) }}"
+            alt="After screenshot"
+            style="display:block;width:100%;height:auto;">
         </div>
       {% else %}
         <p class="section-sub" style="margin-top:8px;">No outcome screenshot uploaded.</p>
       {% endif %}
     </div>
+
   </div>
 </div>
 
